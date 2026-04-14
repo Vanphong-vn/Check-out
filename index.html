@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Sales Master - Check In / Check Out Doanh Số</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .nav-active { border-bottom: 4px solid #00c853; color: #00c853; font-weight: 600; }
+        .data-input { transition: all 0.2s; }
+        .data-input:focus { box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.3); }
+        .modal { animation: modalPop 0.3s ease; }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- HEADER -->
+<header class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-3xl">📊</div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Team Sales Master</h1>
+                <p class="text-xs text-emerald-600 font-medium">Check In / Check Out Doanh Số • Tháng 4/2026</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-8 text-sm">
+            <button onclick="switchTab(1)" id="tab-1" class="nav-active flex items-center gap-2 px-5 py-2">
+                <span>📊</span> Dashboard
+            </button>
+            <button onclick="switchTab(2)" id="tab-2" class="flex items-center gap-2 px-5 py-2 hover:text-emerald-600">
+                <span>📥</span> Nhập Dữ Liệu Hàng Ngày
+            </button>
+            <button onclick="switchTab(3)" id="tab-3" class="flex items-center gap-2 px-5 py-2 hover:text-emerald-600">
+                <span>👥</span> Bảng Team
+            </button>
+            <button onclick="switchTab(4)" id="tab-4" class="flex items-center gap-2 px-5 py-2 hover:text-emerald-600">
+                <span>📈</span> Báo Cáo &amp; PE
+            </button>
+            
+            <div class="flex items-center gap-2 bg-gray-100 rounded-3xl px-4 py-1 text-sm">
+                <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span class="font-medium text-gray-700">Đang online • 14 thành viên</span>
+            </div>
+            
+            <button onclick="exportData()" 
+                    class="flex items-center gap-2 bg-emerald-600 text-white px-6 py-2 rounded-2xl hover:bg-emerald-700 text-sm font-semibold">
+                📤 Xuất Excel
+            </button>
+        </div>
+    </div>
+</header>
+
+<div class="max-w-7xl mx-auto px-6 py-8">
+
+<!-- TAB 1: DASHBOARD -->
+<div id="content-1">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <!-- Card 1 -->
+        <div class="bg-white rounded-3xl shadow p-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm text-gray-500">Tổng PE Hôm Nay</p>
+                    <h2 id="todayPE" class="text-4xl font-bold text-emerald-600 mt-2">0</h2>
+                    <p class="text-xs text-gray-400 mt-1">80% Vay + 20% Thẻ</p>
+                </div>
+                <div class="text-5xl">🎯</div>
+            </div>
+            <div class="mt-6 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div id="todayPEBar" class="h-2 bg-emerald-500 rounded-full w-0"></div>
+            </div>
+        </div>
+        
+        <!-- Card 2 -->
+        <div class="bg-white rounded-3xl shadow p-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm text-gray-500">Tổng Giải Ngân Hôm Nay</p>
+                    <h2 id="todayGiaiNgan" class="text-4xl font-bold text-blue-600 mt-2">0</h2>
+                    <p class="text-xs text-gray-400 mt-1">Vay + Thẻ</p>
+                </div>
+                <div class="text-5xl">💰</div>
+            </div>
+        </div>
+        
+        <!-- Card 3 -->
+        <div class="bg-white rounded-3xl shadow p-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm text-gray-500">Tiến độ Tháng 4</p>
+                    <h2 id="monthProgress" class="text-4xl font-bold text-purple-600 mt-2">0%</h2>
+                    <p id="monthPE" class="text-sm text-gray-500">PE tháng: 0 / 42,844</p>
+                </div>
+                <div class="text-5xl">📅</div>
+            </div>
+        </div>
+        
+        <!-- Card 4 -->
+        <div class="bg-white rounded-3xl shadow p-6 flex flex-col justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Số thành viên đã check-in hôm nay</p>
+                <h2 id="checkedInCount" class="text-4xl font-bold text-amber-600 mt-2">0/14</h2>
+            </div>
+            <div onclick="switchTab(2)" class="text-emerald-600 text-sm font-medium flex items-center gap-1 cursor-pointer hover:underline">
+                Nhập dữ liệu ngay <span class="text-xl">→</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ -->
+    <div class="bg-white rounded-3xl shadow p-8">
+        <h3 class="font-semibold text-lg mb-6 flex items-center gap-2">
+            📊 PE từng thành viên hôm nay (80% Vay + 20% Thẻ)
+        </h3>
+        <canvas id="dailyChart" class="w-full" height="120"></canvas>
+    </div>
+</div>
+
+<!-- TAB 2: NHẬP DỮ LIỆU HÀNG NGÀY -->
+<div id="content-2" class="hidden">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold">📥 Nhập Dữ Liệu Hàng Ngày</h2>
+        
+        <div class="flex items-center gap-4">
+            <input type="date" id="inputDate" value="2026-04-07" 
+                   class="bg-white border border-gray-300 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:border-emerald-500">
+            <button onclick="loadDailyData()" 
+                    class="px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-2xl text-sm font-medium">🔄 Tải dữ liệu</button>
+            <button onclick="saveDailyData()" 
+                    class="px-8 py-3 bg-emerald-600 text-white rounded-2xl font-semibold flex items-center gap-2 hover:bg-emerald-700">
+                💾 Lưu &amp; Check-in
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-emerald-600 text-white">
+                <tr>
+                    <th class="text-left py-5 px-8 font-medium">Họ tên</th>
+                    <th class="text-center py-5 px-4 font-medium">Level</th>
+                    <th class="text-center py-5 px-4 font-medium">Kế hoạch<br><span class="text-xs opacity-75">PIL</span></th>
+                    <th class="text-center py-5 px-4 font-medium">Kế hoạch<br><span class="text-xs opacity-75">CARD</span></th>
+                    <th class="text-center py-5 px-4 font-medium">Submit<br><span class="text-xs opacity-75">PIL</span></th>
+                    <th class="text-center py-5 px-4 font-medium">Submit<br><span class="text-xs opacity-75">CARD</span></th>
+                    <th class="text-center py-5 px-4 font-medium">Giải ngân<br><span class="text-xs opacity-75">PIL</span></th>
+                    <th class="text-center py-5 px-4 font-medium">Giải ngân<br><span class="text-xs opacity-75">CARD</span></th>
+                    <th class="text-center py-5 px-4 font-medium">PE Hôm Nay</th>
+                </tr>
+            </thead>
+            <tbody id="dailyTableBody" class="divide-y text-sm"></tbody>
+        </table>
+    </div>
+    <p class="text-xs text-gray-400 mt-4 text-center">* PE = 80% Giải ngân Vay (PIL) + 20% Giải ngân Thẻ (CARD)</p>
+</div>
+
+<!-- TAB 3: BẢNG TEAM -->
+<div id="content-3" class="hidden">
+    <h2 class="text-2xl font-bold mb-6">👥 Bảng Team - PE Tháng 4/2026</h2>
+    <div class="bg-white rounded-3xl shadow overflow-hidden">
+        <table class="w-full" id="teamTable">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="py-4 px-8 text-left">Họ tên</th>
+                    <th class="py-4 px-4 text-center">Level</th>
+                    <th class="py-4 px-4 text-center">PE Target<br>(PIL)</th>
+                    <th class="py-4 px-4 text-center">PE Target<br>(CARD)</th>
+                    <th class="py-4 px-4 text-center">Tổng Giải ngân PIL</th>
+                    <th class="py-4 px-4 text-center">Tổng Giải ngân CARD</th>
+                    <th class="py-4 px-4 text-center">PE Đạt</th>
+                    <th class="py-4 px-4 text-center">% Hoàn thành</th>
+                </tr>
+            </thead>
+            <tbody id="teamTableBody" class="text-sm divide-y"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TAB 4: BÁO CÁO & PE -->
+<div id="content-4" class="hidden">
+    <div class="grid grid-cols-2 gap-8">
+        <!-- Biểu đồ tháng -->
+        <div class="bg-white rounded-3xl shadow p-8">
+            <h3 class="font-semibold mb-6">📈 Tiến độ PE toàn team theo ngày</h3>
+            <canvas id="monthChart" height="320"></canvas>
+        </div>
+        
+        <!-- PE theo hình ảnh gốc -->
+        <div class="bg-white rounded-3xl shadow p-8">
+            <h3 class="font-semibold mb-6 flex items-center gap-3">
+                📋 PE Target Tháng 4 (theo hình ảnh)
+            </h3>
+            <div class="max-h-[420px] overflow-auto text-xs">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-red-600 text-white">
+                            <th class="p-3 text-left">Sales FTE Name</th>
+                            <th class="p-3 text-center">Level</th>
+                            <th class="p-3 text-center bg-yellow-400 text-black">PIL</th>
+                            <th class="p-3 text-center bg-yellow-400 text-black">CARD</th>
+                        </tr>
+                    </thead>
+                    <tbody id="peTargetTable" class="text-gray-700"></tbody>
+                </table>
+            </div>
+            <div class="mt-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-sm">
+                <strong>Cách tính PE:</strong> 80% doanh số Vay (PIL) + 20% doanh số Thẻ (CARD)
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-white border-t mt-12 py-6 text-center text-xs text-gray-400">
+    Hệ thống Check In/Out Doanh Số Team • Dữ liệu được lưu trong trình duyệt (localStorage)<br>
+    14 thành viên • PE Tháng 4/2026 • 80% Vay + 20% Thẻ
+</footer>
+
+<script>
+// ==================== DỮ LIỆU TEAM (14 người + target từ hình ảnh) ====================
+const teamMembers = [
+    { id: 1, name: "Tram Vuong", level: "B7-Lv3", pilTarget: 3876, cardTarget: 3 },
+    { id: 2, name: "An Nguyen", level: "B7-Lv3", pilTarget: 3876, cardTarget: 3 },
+    { id: 3, name: "Tran Phung", level: "B7-Lv1", pilTarget: 3323, cardTarget: 3 },
+    { id: 4, name: "Linh Nguyen", level: "B8-Lv2", pilTarget: 2770, cardTarget: 2 },
+    { id: 5, name: "Quynh Nguyen", level: "B8-Lv2", pilTarget: 2770, cardTarget: 2 },
+    { id: 6, name: "Thao Nguyen", level: "B7-Lv1", pilTarget: 3323, cardTarget: 3 },
+    { id: 7, name: "Thai Tran", level: "B8-Lv1", pilTarget: 2517, cardTarget: 2 },
+    { id: 8, name: "Trong Le", level: "B8-Lv1", pilTarget: 2517, cardTarget: 2 },
+    { id: 9, name: "Tuyen Nguyen", level: "B8-Lv1", pilTarget: 2517, cardTarget: 2 },
+    { id: 10, name: "Ly Nguyen", level: "B8-Lv2", pilTarget: 2770, cardTarget: 2 },
+    { id: 11, name: "Thuy Nguyen", level: "B8-Lv1", pilTarget: 2517, cardTarget: 2 },
+    { id: 12, name: "Ngan Tran", level: "B8-Lv1", pilTarget: 2517, cardTarget: 2 },
+    { id: 13, name: "Trinh Le", level: "B8-Lv2", pilTarget: 2770, cardTarget: 2 },
+    { id: 14, name: "Chau Tran", level: "B8-Lv1", pilTarget: 2517, cardTarget: 2 }
+];
+
+// ==================== BIẾN TOÀN CỤC ====================
+let dailyData = {};           // key = "2026-04-07"
+let monthlyData = {};         // key = "2026-04-07" → tổng team
+let dailyChartInstance = null;
+let monthChartInstance = null;
+
+// ==================== TAILWIND INIT ====================
+function initTailwind() {
+    tailwind.config = {
+        content: [],
+        theme: { extend: {} }
+    };
+}
+
+// ==================== CHUYỂN TAB ====================
+function switchTab(tab) {
+    document.querySelectorAll('[id^="content-"]').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`content-${tab}`).classList.remove('hidden');
+    
+    document.querySelectorAll('button[id^="tab-"]').forEach(el => el.classList.remove('nav-active'));
+    document.getElementById(`tab-${tab}`).classList.add('nav-active');
+    
+    if (tab === 1) renderDashboard();
+    if (tab === 3) renderTeamTable();
+    if (tab === 4) renderPETargetTable();
+}
+
+// ==================== TÍNH PE ====================
+function calculatePE(pil, card) {
+    return Math.round(0.8 * pil + 0.2 * card);
+}
+
+// ==================== LƯU / TẢI DỮ LIỆU ====================
+function saveDailyData() {
+    const date = document.getElementById('inputDate').value;
+    if (!dailyData[date]) dailyData[date] = {};
+    
+    const rows = document.querySelectorAll('#dailyTableBody tr');
+    rows.forEach(row => {
+        const name = row.getAttribute('data-name');
+        dailyData[date][name] = {
+            planPIL: parseFloat(row.querySelector('.plan-pil').value) || 0,
+            planCARD: parseFloat(row.querySelector('.plan-card').value) || 0,
+            submitPIL: parseFloat(row.querySelector('.submit-pil').value) || 0,
+            submitCARD: parseFloat(row.querySelector('.submit-card').value) || 0,
+            giaiNganPIL: parseFloat(row.querySelector('.gn-pil').value) || 0,
+            giaiNganCARD: parseFloat(row.querySelector('.gn-card').value) || 0
+        };
+    });
+    
+    localStorage.setItem('teamSalesData', JSON.stringify(dailyData));
+    alert('✅ Dữ liệu ngày ' + date + ' đã được lưu!');
+    renderDashboard();
+}
+
+function loadDailyData() {
+    const date = document.getElementById('inputDate').value;
+    renderDailyInputTable(date);
+}
+
+// ==================== RENDER BẢNG NHẬP HÀNG NGÀY ====================
+function renderDailyInputTable(date) {
+    const tbody = document.getElementById('dailyTableBody');
+    tbody.innerHTML = '';
+    
+    // Load dữ liệu đã có
+    if (!dailyData[date]) dailyData[date] = {};
+    
+    teamMembers.forEach(member => {
+        const saved = dailyData[date][member.name] || {};
+        
+        const peToday = calculatePE(saved.giaiNganPIL || 0, saved.giaiNganCARD || 0);
+        
+        const rowHTML = `
+        <tr data-name="${member.name}" class="hover:bg-emerald-50">
+            <td class="py-5 px-8 font-medium">${member.name}</td>
+            <td class="text-center">${member.level}</td>
+            <td class="text-center"><input type="number" value="${saved.planPIL || ''}" class="plan-pil w-20 text-center bg-transparent focus:bg-white border border-transparent focus:border-emerald-300 rounded-xl py-2 data-input"></td>
+            <td class="text-center"><input type="number" value="${saved.planCARD || ''}" class="plan-card w-20 text-center bg-transparent focus:bg-white border border-transparent focus:border-emerald-300 rounded-xl py-2 data-input"></td>
+            <td class="text-center"><input type="number" value="${saved.submitPIL || ''}" class="submit-pil w-20 text-center bg-transparent focus:bg-white border border-transparent focus:border-emerald-300 rounded-xl py-2 data-input"></td>
+            <td class="text-center"><input type="number" value="${saved.submitCARD || ''}" class="submit-card w-20 text-center bg-transparent focus:bg-white border border-transparent focus:border-emerald-300 rounded-xl py-2 data-input"></td>
+            <td class="text-center"><input type="number" value="${saved.giaiNganPIL || ''}" class="gn-pil w-20 text-center bg-transparent focus:bg-white border border-transparent focus:border-emerald-300 rounded-xl py-2 data-input" onchange="updateRowPE(this)"></td>
+            <td class="text-center"><input type="number" value="${saved.giaiNganCARD || ''}" class="gn-card w-20 text-center bg-transparent focus:bg-white border border-transparent focus:border-emerald-300 rounded-xl py-2 data-input" onchange="updateRowPE(this)"></td>
+            <td class="text-center font-bold text-emerald-600" id="pe-${member.name}">${peToday}</td>
+        </tr>`;
+        tbody.innerHTML += rowHTML;
+    });
+}
+
+// Cập nhật PE realtime trong bảng
+window.updateRowPE = function(el) {
+    const row = el.closest('tr');
+    const pil = parseFloat(row.querySelector('.gn-pil').value) || 0;
+    const card = parseFloat(row.querySelector('.gn-card').value) || 0;
+    const peCell = row.querySelector('td:last-child');
+    peCell.textContent = calculatePE(pil, card);
+};
+
+// ==================== RENDER DASHBOARD ====================
+function renderDashboard() {
+    const date = document.getElementById('inputDate').value || '2026-04-07';
+    const todayData = dailyData[date] || {};
+    
+    let totalPE = 0;
+    let totalGiaiNgan = 0;
+    let checkedIn = 0;
+    const labels = [];
+    const peValues = [];
+    
+    teamMembers.forEach(m => {
+        const d = todayData[m.name] || {};
+        const pe = calculatePE(d.giaiNganPIL || 0, d.giaiNganCARD || 0);
+        totalPE += pe;
+        totalGiaiNgan += (d.giaiNganPIL || 0) + (d.giaiNganCARD || 0) * 1000; // giả sử CARD = 1tr/điểm
+        if (pe > 0 || (d.giaiNganPIL || 0) > 0) checkedIn++;
+        
+        labels.push(m.name.split(' ')[0]);
+        peValues.push(pe);
+    });
+    
+    // Cập nhật card
+    document.getElementById('todayPE').textContent = totalPE.toLocaleString('vi-VN');
+    document.getElementById('todayGiaiNgan').textContent = Math.round(totalGiaiNgan / 1000000) + 'tr';
+    document.getElementById('checkedInCount').textContent = checkedIn + '/14';
+    
+    // Thanh tiến độ hôm nay
+    const maxPE = 4200; // xấp xỉ 1 ngày
+    document.getElementById('todayPEBar').style.width = Math.min((totalPE / maxPE) * 100, 100) + '%';
+    
+    // Biểu đồ hôm nay
+    if (dailyChartInstance) dailyChartInstance.destroy();
+    dailyChartInstance = new Chart(document.getElementById('dailyChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'PE Hôm Nay',
+                data: peValues,
+                backgroundColor: '#00c853',
+                borderColor: '#00b140',
+                borderWidth: 2,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, grid: { color: '#f1f1f1' } } }
+        }
+    });
+    
+    // Tiến độ tháng (tổng tất cả ngày)
+    let monthPE = 0;
+    Object.keys(dailyData).forEach(d => {
+        if (d.startsWith('2026-04')) {
+            const dayData = dailyData[d];
+            Object.values(dayData).forEach(v => {
+                monthPE += calculatePE(v.giaiNganPIL || 0, v.giaiNganCARD || 0);
+            });
+        }
+    });
+    const totalTarget = 42844;
+    const percent = Math.round((monthPE / totalTarget) * 100);
+    document.getElementById('monthProgress').textContent = percent + '%';
+    document.getElementById('monthPE').innerHTML = `PE tháng: <strong>${monthPE.toLocaleString('vi-VN')}</strong> / 42,844`;
+}
+
+// ==================== RENDER BẢNG TEAM (tháng) ====================
+function renderTeamTable() {
+    const tbody = document.getElementById('teamTableBody');
+    tbody.innerHTML = '';
+    
+    let monthPETotal = 0;
+    
+    teamMembers.forEach(member => {
+        let totalGiaiNganPIL = 0;
+        let totalGiaiNganCARD = 0;
+        
+        Object.keys(dailyData).forEach(date => {
+            if (date.startsWith('2026-04') && dailyData[date][member.name]) {
+                const d = dailyData[date][member.name];
+                totalGiaiNganPIL += d.giaiNganPIL || 0;
+                totalGiaiNganCARD += d.giaiNganCARD || 0;
+            }
+        });
+        
+        const peAchieved = calculatePE(totalGiaiNganPIL, totalGiaiNganCARD);
+        monthPETotal += peAchieved;
+        
+        const percent = member.pilTarget > 0 
+            ? Math.round((peAchieved / (member.pilTarget + member.cardTarget)) * 100) 
+            : 0;
+        
+        tbody.innerHTML += `
+        <tr class="hover:bg-gray-50">
+            <td class="py-4 px-8 font-medium">${member.name}</td>
+            <td class="text-center">${member.level}</td>
+            <td class="text-center font-mono">${member.pilTarget}</td>
+            <td class="text-center font-mono">${member.cardTarget}</td>
+            <td class="text-center">${totalGiaiNganPIL}</td>
+            <td class="text-center">${totalGiaiNganCARD}</td>
+            <td class="text-center font-bold text-emerald-600">${peAchieved}</td>
+            <td class="text-center">
+                <div class="inline-flex items-center gap-2">
+                    <span class="font-medium">${percent}%</span>
+                    <div class="w-20 h-2 bg-gray-100 rounded-full"><div class="h-2 bg-emerald-500 rounded-full" style="width: ${percent}%"></div></div>
+                </div>
+            </td>
+        </tr>`;
+    });
+}
+
+// ==================== RENDER BẢNG PE TARGET (từ hình ảnh) ====================
+function renderPETargetTable() {
+    const tbody = document.getElementById('peTargetTable');
+    tbody.innerHTML = teamMembers.map(m => `
+        <tr class="border-b last:border-0 hover:bg-gray-50">
+            <td class="p-3">${m.name}</td>
+            <td class="p-3 text-center">${m.level}</td>
+            <td class="p-3 text-center font-bold">${m.pilTarget.toLocaleString('vi-VN')}</td>
+            <td class="p-3 text-center font-bold">${m.cardTarget}</td>
+        </tr>
+    `).join('');
+}
+
+// ==================== XUẤT EXCEL (CSV) ====================
+function exportData() {
+    let csv = "Ngày,Họ tên,Kế hoạch PIL,Kế hoạch CARD,Submit PIL,Submit CARD,Giải ngân PIL,Giải ngân CARD,PE\n";
+    
+    Object.keys(dailyData).forEach(date => {
+        Object.keys(dailyData[date]).forEach(name => {
+            const d = dailyData[date][name];
+            const pe = calculatePE(d.giaiNganPIL || 0, d.giaiNganCARD || 0);
+            csv += `${date},${name},${d.planPIL || 0},${d.planCARD || 0},${d.submitPIL || 0},${d.submitCARD || 0},${d.giaiNganPIL || 0},${d.giaiNganCARD || 0},${pe}\n`;
+        });
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `TeamSales_CheckInOut_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+    alert('✅ File CSV đã được tải về!');
+}
+
+// ==================== KHỞI ĐỘNG ====================
+function init() {
+    initTailwind();
+    
+    // Load dữ liệu từ localStorage
+    const saved = localStorage.getItem('teamSalesData');
+    if (saved) dailyData = JSON.parse(saved);
+    
+    // Render bảng nhập mặc định cho ngày hôm nay
+    renderDailyInputTable('2026-04-07');
+    
+    // Render các tab còn lại
+    renderDashboard();
+    renderTeamTable();
+    renderPETargetTable();
+    
+    console.log('%c✅ Hệ thống Check In / Check Out Doanh Số đã sẵn sàng!', 'color:#00c853;font-weight:bold');
+}
+
+// Khởi chạy
+window.onload = init;
+</script>
+</body>
+</html>
