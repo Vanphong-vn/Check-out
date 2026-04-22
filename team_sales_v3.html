@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Sales Master 2026</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c-bg:#f0f2f5; --c-surface:#fff; --c-border:#e5e8ed;
+  --c-primary:#0d6e4f; --c-primary-l:#e8f5f0; --c-accent:#10b981;
+  --c-accent2:#f59e0b; --c-danger:#ef4444; --c-text:#111827;
+  --c-muted:#6b7280; --c-good:#059669; --c-warn:#d97706; --c-bad:#dc2626;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text);min-height:100vh}
+.mono{font-family:'DM Mono',monospace}
+
+/* HEADER */
+#app-header{background:var(--c-surface);border-bottom:1px solid var(--c-border);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.hi{max-width:1500px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:16px;height:56px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#0d6e4f,#10b981);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0}
+.logo-text{font-size:14px;font-weight:700}
+.logo-sub{font-size:10px;color:var(--c-muted)}
+.nav-tabs{display:flex;gap:2px;flex:1}
+.nav-tab{padding:5px 14px;border-radius:7px;font-size:12px;font-weight:500;color:var(--c-muted);cursor:pointer;border:none;background:none;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.nav-tab:hover{background:var(--c-bg);color:var(--c-text)}
+.nav-tab.active{background:var(--c-primary-l);color:var(--c-primary);font-weight:700}
+.hr{display:flex;align-items:center;gap:8px;margin-left:auto}
+#fb-badge{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700}
+.fb-online{background:#d1fae5;color:#065f46}.fb-offline{background:#fee2e2;color:#991b1b}.fb-syncing{background:#fef3c7;color:#92400e}
+#fb-dot{width:7px;height:7px;border-radius:50%}
+.btn-xs{background:var(--c-primary);color:#fff;border:none;padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .2s}
+.btn-xs:hover{background:#0a5a40}
+
+/* LAYOUT */
+.pw{max-width:1500px;margin:0 auto;padding:16px 20px}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi-card{background:var(--c-surface);border-radius:14px;padding:16px 18px;border:1px solid var(--c-border);display:flex;flex-direction:column;gap:4px}
+.kpi-label{font-size:10px;font-weight:700;color:var(--c-muted);text-transform:uppercase;letter-spacing:.05em}
+.kpi-value{font-size:28px;font-weight:800;line-height:1}
+.kpi-sub{font-size:11px;color:var(--c-muted)}
+.kpi-bar-wrap{height:4px;background:var(--c-bg);border-radius:2px;margin-top:5px;overflow:hidden}
+.kpi-bar{height:4px;border-radius:2px;transition:width .8s ease}
+.c-green{color:var(--c-accent)}.c-blue{color:#3b82f6}.c-amber{color:var(--c-accent2)}.c-purple{color:#8b5cf6}.c-red{color:var(--c-danger)}
+.bg-green{background:var(--c-accent)}.bg-blue{background:#3b82f6}.bg-purple{background:#8b5cf6}.bg-amber{background:var(--c-accent2)}
+
+/* PANELS */
+.panel{background:var(--c-surface);border-radius:14px;border:1px solid var(--c-border);padding:18px 20px}
+.panel-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.cg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.cg3{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
+
+/* MONTH NAV */
+.mnav{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.mbtn{background:var(--c-surface);border:1px solid var(--c-border);border-radius:7px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.mbtn:hover{background:var(--c-primary-l);border-color:var(--c-accent)}
+.mlabel{font-size:14px;font-weight:700;min-width:110px;text-align:center}
+
+/* TABLE */
+.tbl-wrap{overflow:auto;border-radius:10px;border:1px solid var(--c-border)}
+.tbl-wrap::-webkit-scrollbar{width:7px;height:7px}
+.tbl-wrap::-webkit-scrollbar-track{background:#f1f5f9}
+.tbl-wrap::-webkit-scrollbar-thumb{background:var(--c-accent);border-radius:4px}
+.dt{width:100%;border-collapse:collapse;font-size:12px}
+.dt thead th{background:#0d6e4f;color:#fff;padding:10px 10px;font-weight:600;font-size:11px;position:sticky;top:0;z-index:5;white-space:nowrap;text-align:center;letter-spacing:.03em}
+.dt thead th.thl{text-align:left}
+.dt thead .thr2 th{background:#0a5a40;font-size:10px;font-weight:500;padding:6px 10px}
+.dt tbody tr{border-bottom:1px solid var(--c-border)}
+.dt tbody tr:hover{background:#f8fffe}
+.dt tbody td{padding:8px 10px;text-align:center;vertical-align:middle}
+.dt tbody td.tdl{text-align:left;font-weight:600}
+.dt tfoot tr{background:#f0f2f5;border-top:2px solid var(--c-border)}
+.dt tfoot td{padding:9px 10px;font-weight:700;text-align:center;font-size:11px}
+.dt tfoot td.tdl{text-align:left;font-size:12px;color:var(--c-primary)}
+
+/* DAILY TABLE — compact, full-page */
+#tbl-daily-wrap{overflow:auto;border-radius:10px;border:1px solid var(--c-border)}
+#tbl-daily-wrap::-webkit-scrollbar{width:7px;height:7px}
+#tbl-daily-wrap::-webkit-scrollbar-track{background:#f1f5f9}
+#tbl-daily-wrap::-webkit-scrollbar-thumb{background:var(--c-accent);border-radius:4px}
+
+/* INPUT */
+.ci{width:64px;text-align:center;background:transparent;border:1px solid transparent;border-radius:5px;padding:4px 3px;font-family:'DM Mono',monospace;font-size:11px;color:var(--c-text);transition:all .15s}
+.ci:focus{background:#fff;border-color:var(--c-accent);outline:none;box-shadow:0 0 0 2px rgba(16,185,129,.15)}
+
+/* CELL COLORS */
+.td-mtd{background:#f0fdf9!important;color:#065f46!important;font-family:'DM Mono',monospace;font-weight:600}
+.td-sf{background:#fff7ed!important;color:#92400e!important;font-family:'DM Mono',monospace;font-weight:700}
+.td-sf.ok{color:var(--c-good)!important;background:#f0fdf4!important}
+.td-pe{font-family:'DM Mono',monospace;font-weight:700}
+.td-card{background:#eff6ff!important;color:#1e40af!important;font-family:'DM Mono',monospace;font-weight:600}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
+.badge-b7l3{background:#fef3c7;color:#92400e}
+.badge-b7l1{background:#dbeafe;color:#1e40af}
+.badge-b8l2{background:#e0e7ff;color:#3730a3}
+.badge-b8l1{background:#f1f5f9;color:#475569}
+
+/* PROGRESS */
+.pw-bar{display:flex;align-items:center;gap:6px}
+.pb-bg{flex:1;height:5px;background:var(--c-bg);border-radius:3px;min-width:50px;overflow:hidden}
+.pb{height:5px;border-radius:3px;transition:width .6s}
+.pct-t{font-size:11px;font-weight:700;min-width:32px;font-family:'DM Mono',monospace}
+
+/* ANALYSIS CARDS */
+.mac{background:var(--c-surface);border:1px solid var(--c-border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:6px;transition:box-shadow .2s}
+.mac:hover{box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.mac-name{font-weight:700;font-size:13px;min-width:120px}
+.mac-lv{min-width:72px}
+.mac-stats{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.mac-sl{font-size:9px;color:var(--c-muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.mac-sv{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;margin-top:1px}
+.mac-plan{min-width:190px}
+.plan-tag{font-size:10px;color:var(--c-warn);background:#fff7ed;border:1px solid #fde68a;padding:3px 8px;border-radius:5px;font-weight:700}
+.plan-tag.ok{color:var(--c-good);background:#f0fdf4;border-color:#bbf7d0}
+
+/* CALENDAR MODAL */
+#cal-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+#cal-modal.open{display:flex}
+.cal-box{background:#fff;border-radius:16px;padding:24px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.cal-dn{text-align:center;font-size:10px;font-weight:700;color:var(--c-muted);padding:5px 0}
+.cal-d{aspect-ratio:1;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;font-weight:500;border:1px solid transparent;transition:all .12s;position:relative}
+.cal-d:hover{border-color:var(--c-accent);background:var(--c-primary-l)}
+.cal-d.has-data{background:#d1fae5;color:#065f46;border-color:#6ee7b7;font-weight:700}
+.cal-d.has-data::after{content:'';position:absolute;bottom:3px;width:3px;height:3px;background:var(--c-good);border-radius:50%}
+.cal-d.today{border-color:var(--c-primary);color:var(--c-primary);font-weight:700;background:var(--c-primary-l)}
+.cal-d.empty{cursor:default}
+.cal-d.wknd{color:#9ca3af}
+.cal-d.has-data.wknd{color:#065f46}
+.cal-info{margin-top:12px;font-size:12px;color:var(--c-muted);min-height:36px;padding:8px;background:var(--c-bg);border-radius:8px}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.toolbar h2{font-size:16px;font-weight:800}
+.tr{margin-left:auto;display:flex;gap:7px;align-items:center}
+.btn-p{background:var(--c-primary);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .2s}
+.btn-p:hover{background:#0a5a40}.btn-p:disabled{opacity:.5;cursor:not-allowed}
+.btn-s{background:var(--c-surface);color:var(--c-text);border:1px solid var(--c-border);padding:7px 13px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-s:hover{background:var(--c-bg)}
+.btn-warn{background:#fff7ed;color:#92400e;border:1px solid #fde68a;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-warn:hover{background:#fef3c7}
+.btn-danger{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer}
+.btn-danger:hover{background:#fecaca}
+.di{background:var(--c-surface);border:1px solid var(--c-border);border-radius:7px;padding:7px 12px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--c-text);outline:none}
+.di:focus{border-color:var(--c-accent)}
+
+/* SECTION TABS */
+.stabs{display:flex;gap:3px;background:var(--c-bg);border-radius:9px;padding:3px}
+.stab{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:500;color:var(--c-muted);cursor:pointer;transition:all .2s}
+.stab.active{background:#fff;color:var(--c-primary);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:10px;font-size:12px;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,.15);transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.175,.885,.32,1.275);z-index:9999}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7}
+#toast.error{background:#fef2f2;color:#991b1b;border:1px solid #fca5a5}
+#toast.info{background:#eff6ff;color:#1e40af;border:1px solid #93c5fd}
+
+/* MODAL OVERLAY */
+#config-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:flex-start;justify-content:center;padding-top:60px;overflow-y:auto}
+#config-modal.open{display:flex}
+.cmod{background:#fff;border-radius:16px;width:900px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.cmod-header{padding:20px 24px;border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between}
+.cmod-body{padding:20px 24px}
+.cmod-footer{padding:16px 24px;border-top:1px solid var(--c-border);display:flex;justify-content:flex-end;gap:8px}
+.cfg-table{width:100%;border-collapse:collapse;font-size:13px}
+.cfg-table th{text-align:left;padding:8px 10px;font-size:11px;font-weight:700;color:var(--c-muted);text-transform:uppercase;border-bottom:2px solid var(--c-border)}
+.cfg-table td{padding:6px 8px;border-bottom:1px solid var(--c-border);vertical-align:middle}
+.cfg-table tr:hover td{background:#fafafa}
+.cfg-inp{width:100%;border:1px solid var(--c-border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none}
+.cfg-inp:focus{border-color:var(--c-accent)}
+.cfg-sel{width:100%;border:1px solid var(--c-border);border-radius:6px;padding:5px 6px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;background:#fff}
+.cfg-num{width:80px;border:1px solid var(--c-border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:'DM Mono',monospace;text-align:right;outline:none}
+.cfg-num:focus{border-color:var(--c-accent)}
+.divider{height:1px;background:var(--c-border);margin:14px 0}
+
+/* PE CONFIG TABLE */
+.pecfg-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.pecfg-table th{text-align:center;padding:7px 8px;font-size:10px;font-weight:700;color:var(--c-muted);text-transform:uppercase;border-bottom:2px solid var(--c-border);background:var(--c-bg)}
+.pecfg-table th:first-child{text-align:left}
+.pecfg-table td{padding:5px 6px;border-bottom:1px solid var(--c-border);text-align:center}
+.pecfg-table td:first-child{text-align:left;font-weight:600}
+.pecfg-table tr:hover td{background:#fafafa}
+
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- CALENDAR MODAL -->
+<div id="cal-modal">
+  <div class="cal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="font-weight:700;font-size:15px" id="cal-modal-title">Tháng 4 / 2026</div>
+      <button onclick="closeCalModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--c-muted)">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:6px">
+      <button class="mbtn" onclick="shiftCalModal(-1)">←</button>
+      <button class="mbtn" onclick="shiftCalModal(1)">→</button>
+      <div style="font-size:11px;color:var(--c-muted);display:flex;align-items:center;gap:6px;margin-left:4px">
+        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c-accent)"></span>Có data
+        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c-primary);margin-left:4px"></span>Hôm nay
+      </div>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-dn">T2</div><div class="cal-dn">T3</div><div class="cal-dn">T4</div>
+      <div class="cal-dn">T5</div><div class="cal-dn">T6</div><div class="cal-dn">T7</div><div class="cal-dn">CN</div>
+    </div>
+    <div class="cal-grid" id="cal-modal-grid"></div>
+    <div class="cal-info" id="cal-modal-info">Nhấn vào ngày để xem tóm tắt</div>
+  </div>
+</div>
+
+<!-- CONFIG MODAL -->
+<div id="config-modal">
+  <div class="cmod">
+    <div class="cmod-header">
+      <div style="font-size:16px;font-weight:800">⚙️ Quản lý Thành viên & PE Target</div>
+      <button onclick="closeConfig()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--c-muted)">✕</button>
+    </div>
+    <div class="cmod-body">
+      <!-- Tab selector -->
+      <div class="stabs" style="margin-bottom:16px">
+        <div class="stab active" onclick="switchCfgTab('members',this)">👤 Thành viên</div>
+        <div class="stab" onclick="switchCfgTab('pe',this)">🎯 PE Target theo tháng</div>
+      </div>
+
+      <!-- MEMBERS TAB -->
+      <div id="cfg-members">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:12px;color:var(--c-muted)">Thêm/xóa/sửa thành viên. Thứ tự hiển thị theo Level.</div>
+          <button class="btn-p" onclick="addMemberRow()">+ Thêm thành viên</button>
+        </div>
+        <div style="overflow:auto;max-height:400px">
+          <table class="cfg-table" id="cfg-member-table">
+            <thead><tr>
+              <th style="width:160px">Họ tên</th>
+              <th style="width:90px">Level</th>
+              <th style="width:80px">PIL Target</th>
+              <th style="width:70px">CARD Target</th>
+              <th style="width:50px"></th>
+            </tr></thead>
+            <tbody id="cfg-member-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PE TARGET TAB -->
+      <div id="cfg-pe" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:12px;color:var(--c-muted)">Chỉnh PE Target cho từng thành viên theo từng tháng. Dữ liệu lưu trên Firebase.</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="pe-cfg-month" class="di" onchange="renderPECfgTable()">
+              <option value="1">Tháng 1</option><option value="2">Tháng 2</option>
+              <option value="3">Tháng 3</option><option value="4" selected>Tháng 4</option>
+              <option value="5">Tháng 5</option><option value="6">Tháng 6</option>
+              <option value="7">Tháng 7</option><option value="8">Tháng 8</option>
+              <option value="9">Tháng 9</option><option value="10">Tháng 10</option>
+              <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+            </select>
+            <select id="pe-cfg-year" class="di" onchange="renderPECfgTable()">
+              <option value="2025">2025</option><option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+            </select>
+            <button class="btn-p" onclick="savePETargets()">💾 Lưu PE targets</button>
+          </div>
+        </div>
+        <table class="pecfg-table">
+          <thead><tr>
+            <th style="min-width:130px">Họ tên</th>
+            <th>Level</th>
+            <th>PIL Target</th>
+            <th>CARD Target</th>
+            <th>PIL Target mới</th>
+            <th>CARD Target mới</th>
+          </tr></thead>
+          <tbody id="pe-cfg-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cmod-footer">
+      <button class="btn-s" onclick="closeConfig()">Đóng</button>
+      <button class="btn-p" onclick="saveConfig()">💾 Lưu thành viên</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="app-header">
+  <div class="hi">
+    <div class="logo-icon">📊</div>
+    <div><div class="logo-text">Team Sales Master</div><div class="logo-sub" id="hl-sub">Tháng 4 · 2026</div></div>
+    <nav class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab(1)" id="tab-1">📈 PE & Dashboard</button>
+      <button class="nav-tab" onclick="switchTab(2)" id="tab-2">👥 Bảng Team Tháng</button>
+      <button class="nav-tab" onclick="switchTab(3)" id="tab-3">📥 Nhập Dữ Liệu</button>
+      <button class="nav-tab" onclick="switchTab(4)" id="tab-4">🔬 Analysis</button>
+    </nav>
+    <div class="hr">
+      <div id="fb-badge" class="fb-syncing"><div id="fb-dot" style="background:#d97706"></div><span id="fb-label">Connecting…</span></div>
+      <button class="btn-xs" onclick="openConfig()">⚙️ Quản lý</button>
+      <button class="btn-xs" onclick="exportData()">↓ CSV</button>
+    </div>
+  </div>
+</header>
+
+<div class="pw">
+
+<!-- ━━━━━━━━━━━━━━━━━━━ TAB 1: DASHBOARD ━━━━━━━━━━━━━━━━━━━ -->
+<div id="content-1" class="tab-content active">
+  <div class="mnav">
+    <button class="mbtn" onclick="shiftMonth(-1)">← Trước</button>
+    <div class="mlabel" id="dash-mlabel">Tháng 4 / 2026</div>
+    <button class="mbtn" onclick="shiftMonth(1)">Tiếp →</button>
+    <div style="font-size:11px;color:var(--c-muted);margin-left:6px">Dữ liệu cộng dồn theo ngày thực tế</div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Total Submit MTD</div><div class="kpi-value c-blue" id="kpi-sub">0</div><div class="kpi-sub">Hồ sơ submit trong tháng</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-blue" id="kpi-sub-bar" style="width:0%"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">Total DIS PIL MTD</div><div class="kpi-value c-green" id="kpi-dis">0</div><div class="kpi-sub">Giải ngân PIL trong tháng</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-green" id="kpi-dis-bar" style="width:0%"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">PE Team (80%PIL+20%CARD)</div><div class="kpi-value c-purple" id="kpi-pe">0</div><div class="kpi-sub" id="kpi-pe-sub">Target: 0</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-purple" id="kpi-pe-bar" style="width:0%"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">Check-in Hôm Nay</div><div class="kpi-value c-amber" id="kpi-ci">0/0</div><div class="kpi-sub">Thành viên đã nhập liệu</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-amber" id="kpi-ci-bar" style="width:0%"></div></div></div>
+  </div>
+
+  <div class="cg3">
+    <div class="panel">
+      <div class="panel-title">📈 DIS PIL cộng dồn toàn team theo ngày <span style="font-size:10px;color:var(--c-muted);font-weight:400;margin-left:6px" id="cum-lbl"></span></div>
+      <canvas id="cumulChart" height="100"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">🎯 % PE DIS vs Target (cá nhân)</div>
+      <canvas id="pePctChart" height="100"></canvas>
+    </div>
+  </div>
+
+  <div class="cg2">
+    <div class="panel">
+      <div class="panel-title">📋 MTD Submit PIL – từng thành viên</div>
+      <canvas id="memSubChart" height="120"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">💰 MTD DIS PIL – từng thành viên</div>
+      <canvas id="memDisChart" height="120"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━ TAB 2: BẢNG TEAM ━━━━━━━━━━━━━━━━━━━ -->
+<div id="content-2" class="tab-content">
+  <div class="toolbar">
+    <h2>👥 Bảng Team Theo Tháng</h2>
+    <div class="tr">
+      <button class="mbtn" onclick="shiftTeamMonth(-1)">← Trước</button>
+      <div class="mlabel" id="team-mlabel" style="font-size:13px">Tháng 4 / 2026</div>
+      <button class="mbtn" onclick="shiftTeamMonth(1)">Tiếp →</button>
+      <button class="btn-s" onclick="openCalModal()">📅 Xem lịch</button>
+    </div>
+  </div>
+
+  <div class="tbl-wrap" style="max-height:calc(100vh - 180px)">
+    <table class="dt" id="teamTable">
+      <thead>
+        <tr>
+          <th class="thl" rowspan="2" style="min-width:120px">Họ tên</th>
+          <th rowspan="2">Level</th>
+          <th colspan="2" style="border-bottom:1px solid rgba(255,255,255,.25)">PE Target</th>
+          <th colspan="2" style="border-bottom:1px solid rgba(255,255,255,.25)">Tổng DIS</th>
+          <th colspan="2" style="border-bottom:1px solid rgba(255,255,255,.25)">Shortfall</th>
+          <th rowspan="2">% DIS PIL</th>
+          <th rowspan="2">PE Thực tế</th>
+        </tr>
+        <tr class="thr2">
+          <th>PIL</th><th>CARD</th>
+          <th>PIL</th><th>CARD</th>
+          <th>PIL</th><th>CARD</th>
+        </tr>
+      </thead>
+      <tbody id="teamTBody"></tbody>
+      <tfoot id="teamTFoot"></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━ TAB 3: NHẬP DỮ LIỆU ━━━━━━━━━━━━━━━━━━━ -->
+<div id="content-3" class="tab-content">
+  <div class="toolbar">
+    <h2>📥 Nhập Dữ Liệu Hàng Ngày</h2>
+    <div class="tr">
+      <div style="font-size:10px;color:var(--c-muted);background:var(--c-primary-l);padding:3px 9px;border-radius:5px;font-weight:600">
+        MTD=∑tháng · PE=80%PIL+20%CARD
+      </div>
+      <input type="date" id="inputDate" class="di">
+      <button class="btn-s" onclick="loadDailyData()">🔄 Tải</button>
+      <button class="btn-p" id="saveBtn" onclick="saveDailyData()">💾 Lưu &amp; Check-in</button>
+    </div>
+  </div>
+
+  <div id="tbl-daily-wrap">
+    <table class="dt" id="dailyTable">
+      <thead>
+        <tr>
+          <th class="thl" rowspan="2" style="min-width:115px">Họ tên</th>
+          <th rowspan="2" style="min-width:65px">Level</th>
+          <!-- PIL group -->
+          <th colspan="2" style="background:#0a5a40;border-bottom:1px solid rgba(255,255,255,.25)">📄 PIL hôm nay</th>
+          <th colspan="2" style="background:#1a7a5f;border-bottom:1px solid rgba(255,255,255,.25)">✅ CARD hôm nay</th>
+          <th colspan="2" style="background:#0d6e4f;border-bottom:1px solid rgba(255,255,255,.25)">📊 MTD (∑ tháng)</th>
+          <th colspan="3" style="background:#0b5c42;border-bottom:1px solid rgba(255,255,255,.25)">🎯 % PE</th>
+        </tr>
+        <tr class="thr2">
+          <th>Sub PIL</th><th>Dis PIL</th>
+          <th style="background:#1a7a5f">Sub Card</th><th style="background:#1a7a5f">Dis Card</th>
+          <th>MTD Sub</th><th>MTD Dis</th>
+          <th>%PE PIL</th><th>%PE Card</th><th>%PE Tổng</th>
+        </tr>
+      </thead>
+      <tbody id="dailyTBody"></tbody>
+      <tfoot id="dailyTFoot"></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━ TAB 4: ANALYSIS ━━━━━━━━━━━━━━━━━━━ -->
+<div id="content-4" class="tab-content">
+  <div class="toolbar">
+    <h2>🔬 Analysis Team</h2>
+    <div class="tr">
+      <div style="font-size:11px;color:var(--c-muted)">Ngưỡng: <strong>70% DIS/Target</strong></div>
+      <div class="stabs">
+        <div class="stab active" onclick="switchAView('all',this)">Tất cả</div>
+        <div class="stab" onclick="switchAView('above',this)">≥ 70% ✅</div>
+        <div class="stab" onclick="switchAView('below',this)">< 70% ⚠️</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:14px;align-items:start">
+    <div>
+      <div class="panel" style="margin-bottom:12px;padding:14px 20px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+          <div><div class="kpi-label">Đạt ≥ 70%</div><div class="kpi-value c-green" id="an-above" style="font-size:26px">0</div><div class="kpi-sub">thành viên</div></div>
+          <div><div class="kpi-label">Dưới 70%</div><div class="kpi-value c-red" id="an-below" style="font-size:26px">0</div><div class="kpi-sub">cần theo dõi</div></div>
+          <div><div class="kpi-label">Avg % DIS</div><div class="kpi-value c-amber" id="an-avg" style="font-size:26px">0%</div><div class="kpi-sub">trung bình team</div></div>
+          <div><div class="kpi-label">DIS còn lại</div><div class="kpi-value c-purple" id="an-rem" style="font-size:26px">0</div><div class="kpi-sub">để đạt 70% PE</div></div>
+        </div>
+      </div>
+      <div id="an-cards"></div>
+    </div>
+    <div class="panel" style="position:sticky;top:68px">
+      <div class="panel-title">📊 % DIS PIL vs Target</div>
+      <canvas id="anChart" height="280"></canvas>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--c-muted);line-height:1.9">
+        <div><strong>PE</strong> = 80% × DIS PIL + 20% × DIS CARD</div>
+        <div><strong>70% PE</strong> = 70% × PIL Target</div>
+        <div style="margin-top:7px;padding:9px;background:var(--c-primary-l);border-radius:7px;color:var(--c-primary);font-weight:700;font-size:11px">
+          DIS PIL cần đạt 70%:<br>= 70% × PIL Target ÷ 0.8
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- .pw -->
+
+<footer style="text-align:center;padding:12px;font-size:10px;color:var(--c-muted);border-top:1px solid var(--c-border);margin-top:20px">
+  Team Sales Master v3 • Firebase Firestore Real-time • PE = 80% PIL + 20% CARD
+</footer>
+
+<script>
+// ════════════════════════════════════════
+//  FIREBASE
+// ════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:"AIzaSyAP8sel63QwIJZG0UgQxe0jGNMhvOa-GIQ",
+  authDomain:"check-in--out.firebaseapp.com",
+  projectId:"check-in--out",
+  storageBucket:"check-in--out.firebasestorage.app",
+  messagingSenderId:"1074469526466",
+  appId:"1:1074469526466:web:febb11529b91a97ed3145b"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ════════════════════════════════════════
+//  DEFAULT TEAM (fallback nếu chưa có Firebase config)
+// ════════════════════════════════════════
+const DEFAULT_MEMBERS = [
+  {id:1,  name:"Tram Vuong",   level:"B7-Lv3", pilTarget:3876, cardTarget:3},
+  {id:2,  name:"An Nguyen",    level:"B7-Lv3", pilTarget:3876, cardTarget:3},
+  {id:3,  name:"Tran Phung",   level:"B7-Lv1", pilTarget:3323, cardTarget:3},
+  {id:6,  name:"Thao Nguyen",  level:"B7-Lv1", pilTarget:3323, cardTarget:3},
+  {id:4,  name:"Linh Nguyen",  level:"B8-Lv2", pilTarget:2770, cardTarget:2},
+  {id:5,  name:"Quynh Nguyen", level:"B8-Lv2", pilTarget:2770, cardTarget:2},
+  {id:10, name:"Ly Nguyen",    level:"B8-Lv2", pilTarget:2770, cardTarget:2},
+  {id:13, name:"Trinh Le",     level:"B8-Lv2", pilTarget:2770, cardTarget:2},
+  {id:7,  name:"Thai Tran",    level:"B8-Lv1", pilTarget:2517, cardTarget:2},
+  {id:8,  name:"Trong Le",     level:"B8-Lv1", pilTarget:2517, cardTarget:2},
+  {id:9,  name:"Tuyen Nguyen", level:"B8-Lv1", pilTarget:2517, cardTarget:2},
+  {id:11, name:"Thuy Nguyen",  level:"B8-Lv1", pilTarget:2517, cardTarget:2},
+  {id:12, name:"Ngan Tran",    level:"B8-Lv1", pilTarget:2517, cardTarget:2},
+  {id:14, name:"Chau Tran",    level:"B8-Lv1", pilTarget:2517, cardTarget:2}
+];
+
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+let teamMembers = JSON.parse(JSON.stringify(DEFAULT_MEMBERS)); // working copy
+let peTargetOverrides = {}; // { "2026-04": { "Tram Vuong": {pil:3876, card:3} } }
+let dailyData = {};
+let viewYear=2026, viewMonth=4;
+let teamYear=2026, teamMonth=4;
+let calModalYear=2026, calModalMonth=4;
+let aView='all';
+let charts={};
+let realtimeUnsub=null;
+let cfgTab='members';
+
+// ════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════
+const pad = n=>String(n).padStart(2,'0');
+const dayKey = (y,m,d)=>`${y}-${pad(m)}-${pad(d)}`;
+const mKey   = (y,m)=>`${y}-${pad(m)}`;
+const today  = ()=>new Date().toISOString().slice(0,10);
+const fmtNum = n=>Number(n||0).toLocaleString('vi-VN');
+
+// First name = LAST token (Vietnamese name convention: Family + Middle + Given)
+// e.g. "Tram Vuong" → "Tram" (first token), but displayed as "Tram"
+// Per request: take FIRST token for chart labels
+const chartName = name => name.trim().split(/\s+/)[0];
+
+function getTargetForMember(name, y, m) {
+  const key = mKey(y,m);
+  if(peTargetOverrides[key]?.[name]) return peTargetOverrides[key][name];
+  const def = teamMembers.find(m=>m.name===name);
+  return def ? {pil:def.pilTarget, card:def.cardTarget} : {pil:0,card:0};
+}
+
+function sortMembers(arr) {
+  const order = {'B7-Lv3':0,'B7-Lv1':1,'B8-Lv2':2,'B8-Lv1':3};
+  return [...arr].sort((a,b)=>(order[a.level]??9)-(order[b.level]??9));
+}
+
+function levelBadge(l) {
+  const c=l==='B7-Lv3'?'badge-b7l3':l==='B7-Lv1'?'badge-b7l1':l==='B8-Lv2'?'badge-b8l2':'badge-b8l1';
+  return `<span class="badge ${c}">${l}</span>`;
+}
+
+function pctClr(p) {
+  if(p>=80) return 'var(--c-good)';
+  if(p>=70) return 'var(--c-accent)';
+  if(p>=50) return 'var(--c-warn)';
+  return 'var(--c-bad)';
+}
+
+function pBar(pct,color) {
+  const w=Math.min(pct,100);
+  return `<div class="pw-bar"><div class="pb-bg"><div class="pb" style="width:${w}%;background:${color||'var(--c-accent)'}"></div></div><span class="pct-t" style="color:${color||'var(--c-text)'}">${Math.round(pct)}%</span></div>`;
+}
+
+function getMTD(name,field,dateStr) {
+  const prefix=dateStr.slice(0,7);
+  let s=0;
+  Object.keys(dailyData).forEach(d=>{
+    if(d.startsWith(prefix)&&d<=dateStr){const r=dailyData[d]?.[name];if(r)s+=r[field]||0;}
+  });
+  return s;
+}
+
+function getMemberMonthTotal(name,field,y,m) {
+  const prefix=`${y}-${pad(m)}`;
+  let s=0;
+  Object.keys(dailyData).forEach(d=>{
+    if(d.startsWith(prefix)){const r=dailyData[d]?.[name];if(r)s+=r[field]||0;}
+  });
+  return s;
+}
+
+function getTeamMonthTotals(y,m) {
+  const prefix=`${y}-${pad(m)}`;
+  let sub=0,dis=0,disCard=0;
+  Object.keys(dailyData).forEach(d=>{
+    if(d.startsWith(prefix)) Object.values(dailyData[d]).forEach(r=>{
+      if(r&&typeof r==='object'){sub+=r.submitPIL||0;dis+=r.disPIL||0;disCard+=r.disCard||0;}
+    });
+  });
+  return {sub,dis,disCard};
+}
+
+function getDailyCumulative(y,m) {
+  const days=new Date(y,m,0).getDate(), td=today();
+  let cum=0; const labels=[],vals=[];
+  for(let d=1;d<=days;d++){
+    const k=dayKey(y,m,d);
+    if(k>td&&!dailyData[k]) break;
+    let dt=0;
+    if(dailyData[k]) Object.values(dailyData[k]).forEach(r=>{if(r&&typeof r==='object')dt+=r.disPIL||0;});
+    cum+=dt; labels.push(`${d}/${m}`); vals.push(cum);
+  }
+  return {labels,vals};
+}
+
+function totalPilTarget(y,m) {
+  const key=mKey(y,m);
+  return teamMembers.reduce((s,mem)=>{
+    const t=peTargetOverrides[key]?.[mem.name];
+    return s+(t?t.pil:mem.pilTarget);
+  },0);
+}
+function totalCardTarget(y,m) {
+  const key=mKey(y,m);
+  return teamMembers.reduce((s,mem)=>{
+    const t=peTargetOverrides[key]?.[mem.name];
+    return s+(t?t.card:mem.cardTarget);
+  },0);
+}
+
+// ════════════════════════════════════════
+//  TOAST & STATUS
+// ════════════════════════════════════════
+function toast(msg,type='success',dur=3000){
+  const el=document.getElementById('toast');
+  el.className=`show ${type}`;
+  el.innerHTML=(type==='success'?'✅ ':type==='error'?'❌ ':'ℹ️ ')+msg;
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>{el.className=type;},dur);
+}
+
+function setStatus(s){
+  const dot=document.getElementById('fb-dot'),lbl=document.getElementById('fb-label'),bdg=document.getElementById('fb-badge');
+  bdg.className=`fb-badge ${s==='online'?'fb-online':s==='offline'?'fb-offline':'fb-syncing'}`;
+  dot.style.background=s==='online'?'#059669':s==='offline'?'#dc2626':'#d97706';
+  lbl.textContent=s==='online'?'Firebase · Live':s==='offline'?'Offline · Cache':'Syncing…';
+}
+
+// ════════════════════════════════════════
+//  FIREBASE LISTENER
+// ════════════════════════════════════════
+function startListener(y,m){
+  if(realtimeUnsub) realtimeUnsub();
+  const days=new Date(y,m,0).getDate();
+  const from=`${y}-${pad(m)}-01`, to=`${y}-${pad(m)}-${pad(days)}`;
+  realtimeUnsub=db.collection('dailySales')
+    .where(firebase.firestore.FieldPath.documentId(),'>=',from)
+    .where(firebase.firestore.FieldPath.documentId(),'<=',to)
+    .onSnapshot(snap=>{
+      setStatus('online');
+      snap.docChanges().forEach(ch=>{
+        if(ch.type==='removed') delete dailyData[ch.doc.id];
+        else dailyData[ch.doc.id]=ch.doc.data();
+      });
+      refreshActiveTab();
+    },err=>{setStatus('offline');toast('Mất kết nối Firebase','error');});
+}
+
+function refreshActiveTab(){
+  const t=document.querySelector('.nav-tab.active')?.id.replace('tab-','');
+  if(t==='1') renderDashboard();
+  if(t==='2') renderTeamTable();
+  if(t==='3') renderDailyTable(document.getElementById('inputDate').value);
+  if(t==='4') renderAnalysis();
+}
+
+// ════════════════════════════════════════
+//  TAB SWITCHING
+// ════════════════════════════════════════
+function switchTab(n){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById(`content-${n}`).classList.add('active');
+  document.getElementById(`tab-${n}`).classList.add('active');
+  if(n===1) renderDashboard();
+  if(n===2) renderTeamTable();
+  if(n===3) renderDailyTable(document.getElementById('inputDate').value);
+  if(n===4) renderAnalysis();
+}
+function switchAView(v,el){
+  aView=v;
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderAnalysis();
+}
+
+// ════════════════════════════════════════
+//  FIREBASE: SAVE/LOAD DAILY
+// ════════════════════════════════════════
+async function saveDailyData(){
+  const date=document.getElementById('inputDate').value;
+  if(!date){toast('Chọn ngày!','error');return;}
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=true;btn.innerHTML='⏳ Lưu…';
+  const rows=document.querySelectorAll('#dailyTBody tr[data-name]');
+  const payload={};
+  rows.forEach(row=>{
+    const name=row.getAttribute('data-name');
+    payload[name]={
+      submitPIL: parseFloat(row.querySelector('.inp-sub-pil')?.value)||0,
+      disPIL:    parseFloat(row.querySelector('.inp-dis-pil')?.value)||0,
+      submitCard:parseFloat(row.querySelector('.inp-sub-card')?.value)||0,
+      disCard:   parseFloat(row.querySelector('.inp-dis-card')?.value)||0,
+      savedAt:   new Date().toISOString()
+    };
+  });
+  try{
+    setStatus('syncing');
+    await db.collection('dailySales').doc(date).set(payload,{merge:true});
+    dailyData[date]={...(dailyData[date]||{}),...payload};
+    toast(`Đã lưu ngày ${date}!`);setStatus('online');
+    renderDailyTable(date);
+  }catch(e){toast('Lỗi lưu dữ liệu!','error');setStatus('offline');}
+  finally{btn.disabled=false;btn.innerHTML='💾 Lưu & Check-in';}
+}
+
+async function loadDailyData(){
+  const date=document.getElementById('inputDate').value;
+  setStatus('syncing');
+  try{
+    const doc=await db.collection('dailySales').doc(date).get();
+    dailyData[date]=doc.exists?doc.data():{};
+    toast(doc.exists?`Đã tải ngày ${date}`:`Chưa có dữ liệu ngày ${date}`,'info');
+    setStatus('online');
+  }catch(e){toast('Không tải được','error');setStatus('offline');}
+  renderDailyTable(date);
+}
+
+// ════════════════════════════════════════
+//  TAB 1: DASHBOARD
+// ════════════════════════════════════════
+function renderDashboard(){
+  const y=viewYear,m=viewMonth;
+  document.getElementById('dash-mlabel').textContent=`Tháng ${m} / ${y}`;
+  document.getElementById('hl-sub').textContent=`Tháng ${m} · ${y}`;
+  document.getElementById('cum-lbl').textContent=`Tháng ${m}/${y}`;
+
+  const {sub,dis,disCard}=getTeamMonthTotals(y,m);
+  const pilTgt=totalPilTarget(y,m), cardTgt=totalCardTarget(y,m);
+  const pe=Math.round(dis*0.8+disCard*0.2);
+  const peTgt=pilTgt; // 80% weight proxy
+
+  document.getElementById('kpi-sub').textContent=fmtNum(sub);
+  document.getElementById('kpi-dis').textContent=fmtNum(dis);
+  document.getElementById('kpi-pe').textContent=fmtNum(pe);
+  document.getElementById('kpi-pe-sub').textContent=`Target: ${fmtNum(pilTgt)} (${pilTgt?Math.round(pe/pilTgt*100):0}%)`;
+
+  const td=today(), todayRec=dailyData[td]||{};
+  let ci=0;
+  teamMembers.forEach(mm=>{const r=todayRec[mm.name];if(r&&(r.disPIL||r.submitPIL||r.disCard||r.submitCard))ci++;});
+  document.getElementById('kpi-ci').textContent=`${ci}/${teamMembers.length}`;
+
+  document.getElementById('kpi-sub-bar').style.width=Math.min(sub/(pilTgt*1.2||1)*100,100)+'%';
+  document.getElementById('kpi-dis-bar').style.width=Math.min(dis/(pilTgt||1)*100,100)+'%';
+  document.getElementById('kpi-pe-bar').style.width=Math.min(pe/(peTgt||1)*100,100)+'%';
+  document.getElementById('kpi-ci-bar').style.width=(ci/(teamMembers.length||1)*100)+'%';
+
+  // Cumulative chart
+  const {labels,vals}=getDailyCumulative(y,m);
+  dChart('cumulChart','line',{labels,datasets:[{label:'MTD DIS PIL',data:vals,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',fill:true,tension:.4,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#10b981'}]},{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}});
+
+  // Member charts
+  const sorted=sortMembers(teamMembers);
+  const mNames=sorted.map(mm=>chartName(mm.name));
+  const mtdSubs=sorted.map(mm=>getMemberMonthTotal(mm.name,'submitPIL',y,m));
+  const mtdDiss=sorted.map(mm=>getMemberMonthTotal(mm.name,'disPIL',y,m));
+
+  dChart('memSubChart','bar',{labels:mNames,datasets:[{label:'MTD Sub',data:mtdSubs,backgroundColor:'#3b82f6',borderRadius:4}]},{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}});
+  dChart('memDisChart','bar',{labels:mNames,datasets:[{label:'MTD DIS',data:mtdDiss,backgroundColor:'#10b981',borderRadius:4}]},{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}});
+
+  // PE pct chart
+  const pePcts=sorted.map(mm=>{
+    const tgt=getTargetForMember(mm.name,y,m);
+    const d=getMemberMonthTotal(mm.name,'disPIL',y,m);
+    return tgt.pil>0?Math.round(d/tgt.pil*100):0;
+  });
+  const barClrs=pePcts.map(p=>p>=80?'#059669':p>=70?'#10b981':p>=50?'#f59e0b':'#ef4444');
+  dChart('pePctChart','bar',{labels:mNames,datasets:[{label:'% DIS/Target',data:pePcts,backgroundColor:barClrs,borderRadius:4},{label:'70%',data:Array(sorted.length).fill(70),type:'line',borderColor:'#f59e0b',borderDash:[4,3],pointRadius:0,borderWidth:1.5,fill:false}]},{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'%'}}},scales:{y:{beginAtZero:true,max:120,grid:{color:'#f0f2f5'},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}});
+}
+
+function shiftMonth(dir){
+  viewMonth+=dir;
+  if(viewMonth>12){viewMonth=1;viewYear++;}
+  if(viewMonth<1){viewMonth=12;viewYear--;}
+  startListener(viewYear,viewMonth);
+  renderDashboard();
+}
+
+// ════════════════════════════════════════
+//  TAB 2: BẢNG TEAM
+// ════════════════════════════════════════
+function renderTeamTable(){
+  const y=teamYear,m=teamMonth;
+  document.getElementById('team-mlabel').textContent=`Tháng ${m} / ${y}`;
+  const sorted=sortMembers(teamMembers);
+  const tbody=document.getElementById('teamTBody');
+  tbody.innerHTML='';
+  let tPil=0,tCard=0,tDis=0,tDisCard=0,tSF=0;
+
+  sorted.forEach(mem=>{
+    const tgt=getTargetForMember(mem.name,y,m);
+    const dis=getMemberMonthTotal(mem.name,'disPIL',y,m);
+    const disCard=getMemberMonthTotal(mem.name,'disCard',y,m);
+    const sfPIL=tgt.pil-dis;
+    const sfCard=tgt.card-disCard;
+    const pct=tgt.pil>0?Math.round(dis/tgt.pil*100):0;
+    const pe=Math.round(dis*0.8+disCard*0.2);
+    const clr=pctClr(pct);
+    tPil+=tgt.pil;tCard+=tgt.card;tDis+=dis;tDisCard+=disCard;tSF+=sfPIL;
+
+    tbody.innerHTML+=`<tr>
+      <td class="tdl">${mem.name}</td>
+      <td>${levelBadge(mem.level)}</td>
+      <td class="mono">${fmtNum(tgt.pil)}</td>
+      <td class="mono">${tgt.card}</td>
+      <td class="td-mtd">${fmtNum(dis)}</td>
+      <td class="td-card">${disCard||'—'}</td>
+      <td class="${sfPIL>0?'td-sf':'td-sf ok'}">${fmtNum(sfPIL)}</td>
+      <td class="${sfCard>0?'td-sf':'td-sf ok'}">${sfCard}</td>
+      <td>${pBar(pct,clr)}</td>
+      <td class="td-pe" style="color:${clr}">${fmtNum(pe)}</td>
+    </tr>`;
+  });
+
+  const totPE=Math.round(tDis*0.8+tDisCard*0.2);
+  const totPct=tPil>0?Math.round(tDis/tPil*100):0;
+  document.getElementById('teamTFoot').innerHTML=`<tr>
+    <td class="tdl">🏁 TỔNG</td><td></td>
+    <td class="mono">${fmtNum(tPil)}</td><td>${tCard}</td>
+    <td class="td-mtd">${fmtNum(tDis)}</td><td class="td-card">${tDisCard||'—'}</td>
+    <td class="td-sf">${fmtNum(tSF)}</td><td>—</td>
+    <td>${pBar(totPct,'var(--c-primary)')}</td>
+    <td class="td-pe" style="color:var(--c-primary)">${fmtNum(totPE)}</td>
+  </tr>`;
+}
+
+function shiftTeamMonth(dir){
+  teamMonth+=dir;
+  if(teamMonth>12){teamMonth=1;teamYear++;}
+  if(teamMonth<1){teamMonth=12;teamYear--;}
+  renderTeamTable();
+}
+
+// ════════════════════════════════════════
+//  CALENDAR MODAL
+// ════════════════════════════════════════
+function openCalModal(){
+  calModalYear=teamYear; calModalMonth=teamMonth;
+  renderCalModal();
+  document.getElementById('cal-modal').classList.add('open');
+}
+function closeCalModal(){document.getElementById('cal-modal').classList.remove('open');}
+function shiftCalModal(dir){calModalMonth+=dir;if(calModalMonth>12){calModalMonth=1;calModalYear++;}if(calModalMonth<1){calModalMonth=12;calModalYear--;}renderCalModal();}
+
+function renderCalModal(){
+  const y=calModalYear,m=calModalMonth;
+  document.getElementById('cal-modal-title').textContent=`Tháng ${m} / ${y}`;
+  const td=today(),days=new Date(y,m,0).getDate();
+  const offset=(new Date(y,m-1,1).getDay()+6)%7;
+  const grid=document.getElementById('cal-modal-grid');
+  grid.innerHTML='';
+  for(let i=0;i<offset;i++){const el=document.createElement('div');el.className='cal-d empty';grid.appendChild(el);}
+  for(let d=1;d<=days;d++){
+    const k=dayKey(y,m,d);
+    const dow=(new Date(y,m-1,d).getDay()+6)%7;
+    const el=document.createElement('div');
+    el.className='cal-d'+(dow>=5?' wknd':'')+(dailyData[k]&&Object.keys(dailyData[k]).length?' has-data':'')+(k===td?' today':'');
+    el.textContent=d;
+    el.onclick=()=>{
+      const rec=dailyData[k];
+      const info=document.getElementById('cal-modal-info');
+      if(!rec||!Object.keys(rec).length){info.textContent=`${d}/${m}: Chưa có dữ liệu`;return;}
+      let sub=0,dis=0,cnt=0;
+      Object.values(rec).forEach(r=>{if(r&&typeof r==='object'){sub+=r.submitPIL||0;dis+=r.disPIL||0;if(r.disPIL>0||r.submitPIL>0)cnt++;}});
+      info.innerHTML=`<strong>${d}/${m}/${y}</strong> · Sub: <b>${sub}</b> · Dis: <b>${dis}</b> · <b>${cnt}</b> thành viên`;
+    };
+    grid.appendChild(el);
+  }
+  document.getElementById('cal-modal-info').textContent='Nhấn vào ngày để xem tóm tắt';
+}
+
+// ════════════════════════════════════════
+//  TAB 3: NHẬP DỮ LIỆU (compact, full-page)
+// ════════════════════════════════════════
+function renderDailyTable(date){
+  if(!date) return;
+  if(!dailyData[date]) dailyData[date]={};
+  const sorted=sortMembers(teamMembers);
+  const tbody=document.getElementById('dailyTBody');
+  tbody.innerHTML='';
+  let tSub=0,tDis=0,tSubCard=0,tDisCard=0;
+
+  sorted.forEach(mem=>{
+    const s=dailyData[date]?.[mem.name]||{};
+    const svSub=s.submitPIL||'', svDis=s.disPIL||'', svSubC=s.submitCard||'', svDisC=s.disCard||'';
+    const mtdSub=getMTD(mem.name,'submitPIL',date);
+    const mtdDis=getMTD(mem.name,'disPIL',date);
+    const tgt=getTargetForMember(mem.name,date.slice(0,4),parseInt(date.slice(5,7)));
+    const pePIL=tgt.pil>0?Math.round(mtdDis/tgt.pil*100):0;
+    const mtdDisCard=getMTD(mem.name,'disCard',date);
+    const peCard=tgt.card>0?Math.round(mtdDisCard/tgt.card*100):0;
+    const peFull=Math.round(mtdDis*0.8+mtdDisCard*0.2);
+    const peTgt=(tgt.pil*0.8+tgt.card*0.2)||1;
+    const pePct=Math.round(peFull/peTgt*100);
+    const clr=pctClr(pePIL);
+
+    if(svSub) tSub+=parseFloat(svSub);
+    if(svDis) tDis+=parseFloat(svDis);
+    if(svSubC) tSubCard+=parseFloat(svSubC);
+    if(svDisC) tDisCard+=parseFloat(svDisC);
+
+    tbody.innerHTML+=`<tr data-name="${mem.name}">
+      <td class="tdl" style="font-size:11px">${mem.name}</td>
+      <td>${levelBadge(mem.level)}</td>
+      <td><input class="ci inp-sub-pil" type="number" value="${svSub}" placeholder="0" oninput="onDailyInput(this,'${date}','${mem.name}')"></td>
+      <td><input class="ci inp-dis-pil" type="number" value="${svDis}" placeholder="0" oninput="onDailyInput(this,'${date}','${mem.name}')"></td>
+      <td><input class="ci inp-sub-card td-card" type="number" value="${svSubC}" placeholder="0" oninput="onDailyInput(this,'${date}','${mem.name}')" style="background:rgba(219,234,254,.3)!important"></td>
+      <td><input class="ci inp-dis-card td-card" type="number" value="${svDisC}" placeholder="0" oninput="onDailyInput(this,'${date}','${mem.name}')" style="background:rgba(219,234,254,.3)!important"></td>
+      <td class="td-mtd dmt-sub">${mtdSub}</td>
+      <td class="td-mtd dmt-dis">${mtdDis}</td>
+      <td class="td-pe dpe-pil" style="color:${clr}">${pePIL}%</td>
+      <td class="td-card dpe-card">${peCard}%</td>
+      <td class="td-pe dpe-full" style="color:${pctClr(pePct)}">${pePct}%</td>
+    </tr>`;
+  });
+
+  // Footer
+  const prefix=date.slice(0,7);
+  let gSub=0,gDis=0,gSubC=0,gDisC=0;
+  Object.keys(dailyData).forEach(d=>{
+    if(d.startsWith(prefix)&&d<=date) Object.values(dailyData[d]).forEach(r=>{
+      if(r&&typeof r==='object'){gSub+=r.submitPIL||0;gDis+=r.disPIL||0;gSubC+=r.submitCard||0;gDisC+=r.disCard||0;}
+    });
+  });
+  const tPil=totalPilTarget(parseInt(date.slice(0,4)),parseInt(date.slice(5,7)));
+  document.getElementById('dailyTFoot').innerHTML=`<tr>
+    <td class="tdl">📊 TỔNG</td><td></td>
+    <td class="mono">${fmtNum(tSub)}</td><td class="mono">${fmtNum(tDis)}</td>
+    <td class="td-card">${fmtNum(tSubCard)}</td><td class="td-card">${fmtNum(tDisCard)}</td>
+    <td class="td-mtd">${fmtNum(gSub)}</td><td class="td-mtd">${fmtNum(gDis)}</td>
+    <td class="td-pe">${tPil?Math.round(gDis/tPil*100):0}%</td>
+    <td class="td-card">—</td>
+    <td class="td-pe">${Math.round(Math.round(gDis*0.8+gDisC*0.2)/(tPil||1)*100)}%</td>
+  </tr>`;
+}
+
+function onDailyInput(el,date,name){
+  const row=el.closest('tr');
+  const sub=parseFloat(row.querySelector('.inp-sub-pil').value)||0;
+  const dis=parseFloat(row.querySelector('.inp-dis-pil').value)||0;
+  const subC=parseFloat(row.querySelector('.inp-sub-card').value)||0;
+  const disC=parseFloat(row.querySelector('.inp-dis-card').value)||0;
+
+  if(!dailyData[date]) dailyData[date]={};
+  dailyData[date][name]={...(dailyData[date][name]||{}),submitPIL:sub,disPIL:dis,submitCard:subC,disCard:disC};
+
+  const mtdSub=getMTD(name,'submitPIL',date);
+  const mtdDis=getMTD(name,'disPIL',date);
+  const mtdDisC=getMTD(name,'disCard',date);
+  const y=parseInt(date.slice(0,4)),m=parseInt(date.slice(5,7));
+  const tgt=getTargetForMember(name,y,m);
+  const pePIL=tgt.pil>0?Math.round(mtdDis/tgt.pil*100):0;
+  const peCard=tgt.card>0?Math.round(mtdDisC/tgt.card*100):0;
+  const peFull=Math.round(mtdDis*0.8+mtdDisC*0.2);
+  const peTgt=(tgt.pil*0.8+tgt.card*0.2)||1;
+  const pePct=Math.round(peFull/peTgt*100);
+  const clr=pctClr(pePIL);
+
+  row.querySelector('.dmt-sub').textContent=mtdSub;
+  row.querySelector('.dmt-dis').textContent=mtdDis;
+  const pelEl=row.querySelector('.dpe-pil');
+  pelEl.textContent=pePIL+'%'; pelEl.style.color=clr;
+  row.querySelector('.dpe-card').textContent=peCard+'%';
+  const peFullEl=row.querySelector('.dpe-full');
+  peFullEl.textContent=pePct+'%'; peFullEl.style.color=pctClr(pePct);
+}
+
+// ════════════════════════════════════════
+//  TAB 4: ANALYSIS
+// ════════════════════════════════════════
+function renderAnalysis(){
+  const y=viewYear,m=viewMonth;
+  const sorted=sortMembers(teamMembers);
+  const results=sorted.map(mem=>{
+    const tgt=getTargetForMember(mem.name,y,m);
+    const dis=getMemberMonthTotal(mem.name,'disPIL',y,m);
+    const disC=getMemberMonthTotal(mem.name,'disCard',y,m);
+    const pct=tgt.pil>0?dis/tgt.pil*100:0;
+    const disNeeded=tgt.pil*0.7/0.8;
+    const remaining=Math.max(0,disNeeded-dis);
+    const pe=Math.round(dis*0.8+disC*0.2);
+    return {...mem,tgt,dis,disC,pct,disNeeded,remaining,pe,above70:pct>=70};
+  });
+
+  const above=results.filter(r=>r.above70).length;
+  const below=results.length-above;
+  const avg=results.length?Math.round(results.reduce((s,r)=>s+r.pct,0)/results.length):0;
+  const totRem=results.filter(r=>!r.above70).reduce((s,r)=>s+r.remaining,0);
+
+  document.getElementById('an-above').textContent=above;
+  document.getElementById('an-below').textContent=below;
+  document.getElementById('an-avg').textContent=avg+'%';
+  document.getElementById('an-rem').textContent=fmtNum(Math.round(totRem));
+
+  const container=document.getElementById('an-cards');
+  container.innerHTML='';
+
+  const addGroup=(grp,label,dot)=>{
+    if(!grp.length) return;
+    container.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;margin-top:14px"><div style="width:9px;height:9px;border-radius:50%;background:${dot}"></div><div style="font-size:13px;font-weight:700">${label}</div><div style="font-size:11px;color:var(--c-muted);background:var(--c-bg);padding:2px 7px;border-radius:10px">${grp.length} thành viên</div></div>`;
+    grp.forEach(r=>{
+      const clr=pctClr(r.pct);
+      const planTxt=r.above70?`<span class="plan-tag ok">✅ Đạt 70%</span>`:`<span class="plan-tag">⚠️ Cần thêm ${fmtNum(Math.round(r.remaining))} DIS</span>`;
+      container.innerHTML+=`<div class="mac">
+        <div class="mac-name">${r.name}</div>
+        <div class="mac-lv">${levelBadge(r.level)}</div>
+        <div class="mac-stats">
+          <div><div class="mac-sl">PIL Target</div><div class="mac-sv">${fmtNum(r.tgt.pil)}</div></div>
+          <div><div class="mac-sl">MTD DIS PIL</div><div class="mac-sv" style="color:var(--c-primary)">${fmtNum(Math.round(r.dis))}</div></div>
+          <div><div class="mac-sl">MTD DIS Card</div><div class="mac-sv c-blue">${fmtNum(Math.round(r.disC))}</div></div>
+          <div><div class="mac-sl">% DIS PIL</div><div class="mac-sv" style="color:${clr}">${Math.round(r.pct)}%</div></div>
+          <div><div class="mac-sl">PE Thực tế</div><div class="mac-sv c-purple">${fmtNum(r.pe)}</div></div>
+        </div>
+        <div class="mac-plan">${planTxt}</div>
+      </div>`;
+    });
+  };
+
+  const filt=aView==='above'?results.filter(r=>r.above70):aView==='below'?results.filter(r=>!r.above70):results;
+  if(aView!=='below') addGroup(results.filter(r=>r.above70),'Đạt ≥ 70% DIS','var(--c-accent)');
+  if(aView!=='above') addGroup(results.filter(r=>!r.above70),'Dưới 70% — Cần theo dõi','var(--c-danger)');
+
+  const names=results.map(r=>chartName(r.name));
+  const pcts=results.map(r=>Math.round(r.pct));
+  const clrs=results.map(r=>r.above70?'#10b981':'#ef4444');
+  dChart('anChart','bar',{labels:names,datasets:[{label:'% DIS',data:pcts,backgroundColor:clrs,borderRadius:4},{label:'70%',data:Array(results.length).fill(70),type:'line',borderColor:'#f59e0b',borderDash:[5,3],pointRadius:0,borderWidth:2,fill:false}]},{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'%'}}},scales:{x:{max:120,grid:{color:'#f0f2f5'},ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}});
+}
+
+// ════════════════════════════════════════
+//  CONFIG MODAL (Members + PE Targets)
+// ════════════════════════════════════════
+function openConfig(){
+  renderCfgMembers();
+  renderPECfgTable();
+  document.getElementById('config-modal').classList.add('open');
+}
+function closeConfig(){document.getElementById('config-modal').classList.remove('open');}
+
+function switchCfgTab(t,el){
+  cfgTab=t;
+  document.querySelectorAll('#config-modal .stab').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('cfg-members').style.display=t==='members'?'block':'none';
+  document.getElementById('cfg-pe').style.display=t==='pe'?'block':'none';
+}
+
+function renderCfgMembers(){
+  const sorted=sortMembers(teamMembers);
+  const tbody=document.getElementById('cfg-member-tbody');
+  tbody.innerHTML='';
+  sorted.forEach((mem,i)=>{
+    tbody.innerHTML+=`<tr data-id="${mem.id}">
+      <td><input class="cfg-inp cfm-name" value="${mem.name}"></td>
+      <td><select class="cfg-sel cfm-level">
+        <option value="B7-Lv3"${mem.level==='B7-Lv3'?' selected':''}>B7-Lv3</option>
+        <option value="B7-Lv1"${mem.level==='B7-Lv1'?' selected':''}>B7-Lv1</option>
+        <option value="B8-Lv2"${mem.level==='B8-Lv2'?' selected':''}>B8-Lv2</option>
+        <option value="B8-Lv1"${mem.level==='B8-Lv1'?' selected':''}>B8-Lv1</option>
+      </select></td>
+      <td><input class="cfg-num cfm-pil" type="number" value="${mem.pilTarget}"></td>
+      <td><input class="cfg-num cfm-card" type="number" value="${mem.cardTarget}"></td>
+      <td><button class="btn-danger" onclick="removeMemberRow(this)" style="padding:4px 8px;font-size:11px">✕</button></td>
+    </tr>`;
+  });
+}
+
+function addMemberRow(){
+  const tbody=document.getElementById('cfg-member-tbody');
+  const newId=Date.now();
+  tbody.innerHTML+=`<tr data-id="${newId}">
+    <td><input class="cfg-inp cfm-name" placeholder="Họ tên"></td>
+    <td><select class="cfg-sel cfm-level">
+      <option value="B7-Lv3">B7-Lv3</option><option value="B7-Lv1">B7-Lv1</option>
+      <option value="B8-Lv2">B8-Lv2</option><option value="B8-Lv1" selected>B8-Lv1</option>
+    </select></td>
+    <td><input class="cfg-num cfm-pil" type="number" value="2517"></td>
+    <td><input class="cfg-num cfm-card" type="number" value="2"></td>
+    <td><button class="btn-danger" onclick="removeMemberRow(this)" style="padding:4px 8px;font-size:11px">✕</button></td>
+  </tr>`;
+}
+
+function removeMemberRow(btn){
+  if(!confirm('Xóa thành viên này?')) return;
+  btn.closest('tr').remove();
+}
+
+async function saveConfig(){
+  const rows=document.querySelectorAll('#cfg-member-tbody tr');
+  const newMembers=[];
+  rows.forEach((row,i)=>{
+    const name=row.querySelector('.cfm-name').value.trim();
+    const level=row.querySelector('.cfm-level').value;
+    const pil=parseInt(row.querySelector('.cfm-pil').value)||0;
+    const card=parseInt(row.querySelector('.cfm-card').value)||0;
+    const id=parseInt(row.getAttribute('data-id'))||Date.now()+i;
+    if(name) newMembers.push({id,name,level,pilTarget:pil,cardTarget:card});
+  });
+  if(!newMembers.length){toast('Cần ít nhất 1 thành viên!','error');return;}
+  teamMembers=sortMembers(newMembers);
+
+  try{
+    setStatus('syncing');
+    await db.collection('config').doc('teamMembers').set({members:teamMembers,updatedAt:new Date().toISOString()});
+    setStatus('online');
+    toast('Đã lưu danh sách thành viên!');
+  }catch(e){toast('Lỗi lưu Firebase, lưu local!','info');}
+
+  refreshActiveTab();
+  closeConfig();
+}
+
+// PE Target per month
+function renderPECfgTable(){
+  const m=parseInt(document.getElementById('pe-cfg-month').value);
+  const y=parseInt(document.getElementById('pe-cfg-year').value);
+  const key=mKey(y,m);
+  const sorted=sortMembers(teamMembers);
+  const tbody=document.getElementById('pe-cfg-tbody');
+  tbody.innerHTML='';
+  sorted.forEach(mem=>{
+    const ov=peTargetOverrides[key]?.[mem.name];
+    const curPil=ov?ov.pil:mem.pilTarget;
+    const curCard=ov?ov.card:mem.cardTarget;
+    tbody.innerHTML+=`<tr data-name="${mem.name}">
+      <td>${mem.name}</td>
+      <td style="text-align:center">${levelBadge(mem.level)}</td>
+      <td style="text-align:center;font-family:'DM Mono',monospace">${fmtNum(mem.pilTarget)}</td>
+      <td style="text-align:center">${mem.cardTarget}</td>
+      <td style="text-align:center"><input class="cfg-num pecfg-pil" type="number" value="${curPil}" style="width:90px"></td>
+      <td style="text-align:center"><input class="cfg-num pecfg-card" type="number" value="${curCard}" style="width:70px"></td>
+    </tr>`;
+  });
+}
+
+async function savePETargets(){
+  const m=parseInt(document.getElementById('pe-cfg-month').value);
+  const y=parseInt(document.getElementById('pe-cfg-year').value);
+  const key=mKey(y,m);
+  if(!peTargetOverrides[key]) peTargetOverrides[key]={};
+  document.querySelectorAll('#pe-cfg-tbody tr').forEach(row=>{
+    const name=row.getAttribute('data-name');
+    const pil=parseInt(row.querySelector('.pecfg-pil').value)||0;
+    const card=parseInt(row.querySelector('.pecfg-card').value)||0;
+    peTargetOverrides[key][name]={pil,card};
+  });
+  try{
+    setStatus('syncing');
+    await db.collection('config').doc('peTargets').set({targets:peTargetOverrides,updatedAt:new Date().toISOString()});
+    setStatus('online');
+    toast(`Đã lưu PE Target Tháng ${m}/${y}!`);
+  }catch(e){toast('Lưu local (offline)','info');}
+  refreshActiveTab();
+}
+
+// ════════════════════════════════════════
+//  EXPORT CSV
+// ════════════════════════════════════════
+function exportData(){
+  let csv="\uFEFFNgày,Họ tên,Level,Sub PIL,Dis PIL,Sub Card,Dis Card\n";
+  Object.keys(dailyData).sort().forEach(date=>{
+    Object.keys(dailyData[date]).forEach(name=>{
+      const d=dailyData[date][name];
+      if(d&&typeof d==='object'){
+        const lv=teamMembers.find(m=>m.name===name)?.level||'';
+        csv+=`${date},${name},${lv},${d.submitPIL||0},${d.disPIL||0},${d.submitCard||0},${d.disCard||0}\n`;
+      }
+    });
+  });
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`TeamSales_${today()}.csv`;
+  a.click();
+  toast('File CSV đã tải về!');
+}
+
+// ════════════════════════════════════════
+//  CHART HELPER
+// ════════════════════════════════════════
+function dChart(id,type,data,opts){
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+  charts[id]=new Chart(document.getElementById(id),{type,data,options:{responsive:true,...opts}});
+}
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+async function init(){
+  tailwind.config={content:[],theme:{extend:{}}};
+  setStatus('syncing');
+
+  const t=today();
+  document.getElementById('inputDate').value=t;
+
+  // Load config from Firebase (members + PE targets)
+  try{
+    const [membDoc,peDoc]=await Promise.all([
+      db.collection('config').doc('teamMembers').get(),
+      db.collection('config').doc('peTargets').get()
+    ]);
+    if(membDoc.exists&&membDoc.data().members?.length){
+      teamMembers=sortMembers(membDoc.data().members);
+    }
+    if(peDoc.exists&&peDoc.data().targets){
+      peTargetOverrides=peDoc.data().targets;
+    }
+  }catch(e){console.warn('Config load failed, using defaults');}
+
+  // Load today's data
+  try{
+    const doc=await db.collection('dailySales').doc(t).get();
+    if(doc.exists) dailyData[t]=doc.data();
+  }catch(e){console.warn('Today load failed');}
+
+  renderDashboard();
+  renderDailyTable(t);
+  startListener(viewYear,viewMonth);
+}
+
+window.onload=init;
+
+// Close modals on backdrop click
+document.getElementById('cal-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeCalModal();});
+document.getElementById('config-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeConfig();});
+</script>
+</body>
+</html>
