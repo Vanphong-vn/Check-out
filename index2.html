@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -202,23 +202,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
 <div id="cal-modal">
   <div class="cal-box">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div style="font-weight:700;font-size:15px" id="cal-modal-title">Tháng 4 / 2026</div>
+      <div style="font-weight:700;font-size:15px" id="cal-modal-title">April / 2026</div>
       <button onclick="closeCalModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--c-muted)">✕</button>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:6px">
       <button class="mbtn" onclick="shiftCalModal(-1)">←</button>
       <button class="mbtn" onclick="shiftCalModal(1)">→</button>
       <div style="font-size:11px;color:var(--c-muted);display:flex;align-items:center;gap:6px;margin-left:4px">
-        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c-accent)"></span>Có data
-        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c-primary);margin-left:4px"></span>Hôm nay
+        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c-accent)"></span>Has data
+        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c-primary);margin-left:4px"></span>Today
       </div>
     </div>
     <div class="cal-grid">
-      <div class="cal-dn">T2</div><div class="cal-dn">T3</div><div class="cal-dn">T4</div>
-      <div class="cal-dn">T5</div><div class="cal-dn">T6</div><div class="cal-dn">T7</div><div class="cal-dn">CN</div>
+      <div class="cal-dn">Mon</div><div class="cal-dn">Tue</div><div class="cal-dn">Wed</div>
+      <div class="cal-dn">Thu</div><div class="cal-dn">Fri</div><div class="cal-dn">Sat</div><div class="cal-dn">Sun</div>
     </div>
     <div class="cal-grid" id="cal-modal-grid"></div>
-    <div class="cal-info" id="cal-modal-info">Nhấn vào ngày để xem tóm tắt</div>
+    <div class="cal-info" id="cal-modal-info">Click on a date to view summary</div>
   </div>
 </div>
 
@@ -226,26 +226,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
 <div id="config-modal">
   <div class="cmod">
     <div class="cmod-header">
-      <div style="font-size:16px;font-weight:800">⚙️ Quản lý Thành viên & PE Target</div>
+      <div style="font-size:16px;font-weight:800">⚙️ Manage Members & PE Target</div>
       <button onclick="closeConfig()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--c-muted)">✕</button>
     </div>
     <div class="cmod-body">
       <!-- Tab selector -->
       <div class="stabs" style="margin-bottom:16px">
-        <div class="stab active" onclick="switchCfgTab('members',this)">👤 Thành viên</div>
-        <div class="stab" onclick="switchCfgTab('pe',this)">🎯 PE Target theo tháng</div>
+        <div class="stab active" onclick="switchCfgTab('members',this)">👤 Members</div>
+        <div class="stab" onclick="switchCfgTab('pe',this)">🎯 PE Target by Month</div>
       </div>
 
       <!-- MEMBERS TAB -->
       <div id="cfg-members">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-size:12px;color:var(--c-muted)">Thêm/xóa/sửa thành viên. Thứ tự hiển thị theo Level.</div>
-          <button class="btn-p" onclick="addMemberRow()">+ Thêm thành viên</button>
+          <div style="font-size:12px;color:var(--c-muted)">Add/remove/edit members. Display order by Level.</div>
+          <button class="btn-p" onclick="addMemberRow()">+ Add Member</button>
         </div>
         <div style="overflow:auto;max-height:400px">
           <table class="cfg-table" id="cfg-member-table">
             <thead><tr>
-              <th style="width:160px">Họ tên</th>
+              <th style="width:160px">Full Name</th>
               <th style="width:90px">Level</th>
               <th style="width:80px">PIL Target</th>
               <th style="width:70px">CARD Target</th>
@@ -259,39 +259,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
       <!-- PE TARGET TAB -->
       <div id="cfg-pe" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-size:12px;color:var(--c-muted)">Chỉnh PE Target cho từng thành viên theo từng tháng. Dữ liệu lưu trên Firebase.</div>
+          <div style="font-size:12px;color:var(--c-muted)">Set PE Target per member per month. Data stored on Firebase.</div>
           <div style="display:flex;gap:8px;align-items:center">
             <select id="pe-cfg-month" class="di" onchange="renderPECfgTable()">
-              <option value="1">Tháng 1</option><option value="2">Tháng 2</option>
-              <option value="3">Tháng 3</option><option value="4" selected>Tháng 4</option>
-              <option value="5">Tháng 5</option><option value="6">Tháng 6</option>
-              <option value="7">Tháng 7</option><option value="8">Tháng 8</option>
-              <option value="9">Tháng 9</option><option value="10">Tháng 10</option>
-              <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+              <option value="1">January</option><option value="2">February</option>
+              <option value="3">March</option><option value="4" selected>April</option>
+              <option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option>
+              <option value="9">September</option><option value="10">October</option>
+              <option value="11">November</option><option value="12">December</option>
             </select>
             <select id="pe-cfg-year" class="di" onchange="renderPECfgTable()">
               <option value="2025">2025</option><option value="2026" selected>2026</option>
               <option value="2027">2027</option>
             </select>
-            <button class="btn-p" onclick="savePETargets()">💾 Lưu PE targets</button>
+            <button class="btn-p" onclick="savePETargets()">💾 Save PE Targets</button>
           </div>
         </div>
         <table class="pecfg-table">
           <thead><tr>
-            <th style="min-width:130px">Họ tên</th>
+            <th style="min-width:130px">Full Name</th>
             <th>Level</th>
             <th>PIL Target</th>
             <th>CARD Target</th>
-            <th>PIL Target mới</th>
-            <th>CARD Target mới</th>
+            <th>New PIL Target</th>
+            <th>New CARD Target</th>
           </tr></thead>
           <tbody id="pe-cfg-tbody"></tbody>
         </table>
       </div>
     </div>
     <div class="cmod-footer">
-      <button class="btn-s" onclick="closeConfig()">Đóng</button>
-      <button class="btn-p" onclick="saveConfig()">💾 Lưu thành viên</button>
+      <button class="btn-s" onclick="closeConfig()">Close</button>
+      <button class="btn-p" onclick="saveConfig()">💾 Save Members</button>
     </div>
   </div>
 </div>
@@ -300,16 +300,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
 <header id="app-header">
   <div class="hi">
     <div class="logo-icon">📊</div>
-    <div><div class="logo-text">Team Sales Master</div><div class="logo-sub" id="hl-sub">Tháng 4 · 2026</div></div>
+    <div><div class="logo-text">Team Sales Master</div><div class="logo-sub" id="hl-sub">April · 2026</div></div>
     <nav class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab(1)" id="tab-1">📈 PE & Dashboard</button>
-      <button class="nav-tab" onclick="switchTab(2)" id="tab-2">👥 Bảng Team Tháng</button>
-      <button class="nav-tab" onclick="switchTab(3)" id="tab-3">📥 Nhập Dữ Liệu</button>
+      <button class="nav-tab" onclick="switchTab(2)" id="tab-2">👥 Monthly Team Board</button>
+      <button class="nav-tab" onclick="switchTab(3)" id="tab-3">📥 Data Entry</button>
       <button class="nav-tab" onclick="switchTab(4)" id="tab-4">🔬 Analysis</button>
     </nav>
     <div class="hr">
       <div id="fb-badge" class="fb-syncing"><div id="fb-dot" style="background:#d97706"></div><span id="fb-label">Connecting…</span></div>
-      <button class="btn-xs" onclick="openConfig()">⚙️ Quản lý</button>
+      <button class="btn-xs" onclick="openConfig()">⚙️ Manage</button>
       <button class="btn-xs" onclick="exportData()">↓ CSV</button>
     </div>
   </div>
@@ -320,51 +320,51 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
 <!-- ━━━━━━━━━━━━━━━━━━━ TAB 1: DASHBOARD ━━━━━━━━━━━━━━━━━━━ -->
 <div id="content-1" class="tab-content active">
   <div class="mnav">
-    <button class="mbtn" onclick="shiftMonth(-1)">← Trước</button>
-    <div class="mlabel" id="dash-mlabel">Tháng 4 / 2026</div>
-    <button class="mbtn" onclick="shiftMonth(1)">Tiếp →</button>
-    <div style="font-size:11px;color:var(--c-muted);margin-left:6px">Dữ liệu cộng dồn theo ngày thực tế</div>
+    <button class="mbtn" onclick="shiftMonth(-1)">← Prev</button>
+    <div class="mlabel" id="dash-mlabel">April / 2026</div>
+    <button class="mbtn" onclick="shiftMonth(1)">Next →</button>
+    <div style="font-size:11px;color:var(--c-muted);margin-left:6px">Cumulative data by actual date</div>
   </div>
 
   <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-label">Total Submit MTD</div><div class="kpi-value c-blue" id="kpi-sub">0</div><div class="kpi-sub">Hồ sơ submit trong tháng</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-blue" id="kpi-sub-bar" style="width:0%"></div></div></div>
-    <div class="kpi-card"><div class="kpi-label">Total DIS PIL MTD</div><div class="kpi-value c-green" id="kpi-dis">0</div><div class="kpi-sub">Giải ngân PIL trong tháng</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-green" id="kpi-dis-bar" style="width:0%"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Submit MTD</div><div class="kpi-value c-blue" id="kpi-sub">0</div><div class="kpi-sub">Applications submitted this month</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-blue" id="kpi-sub-bar" style="width:0%"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">Total DIS PIL MTD</div><div class="kpi-value c-green" id="kpi-dis">0</div><div class="kpi-sub">PIL disbursed this month</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-green" id="kpi-dis-bar" style="width:0%"></div></div></div>
     <div class="kpi-card"><div class="kpi-label">PE Team (80%PIL+20%CARD)</div><div class="kpi-value c-purple" id="kpi-pe">0</div><div class="kpi-sub" id="kpi-pe-sub">Target: 0</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-purple" id="kpi-pe-bar" style="width:0%"></div></div></div>
-    <div class="kpi-card"><div class="kpi-label">Check-in Hôm Nay</div><div class="kpi-value c-amber" id="kpi-ci">0/0</div><div class="kpi-sub">Thành viên đã nhập liệu</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-amber" id="kpi-ci-bar" style="width:0%"></div></div></div>
+    <div class="kpi-card"><div class="kpi-label">Check-in Today</div><div class="kpi-value c-amber" id="kpi-ci">0/0</div><div class="kpi-sub">Members who entered data</div><div class="kpi-bar-wrap"><div class="kpi-bar bg-amber" id="kpi-ci-bar" style="width:0%"></div></div></div>
   </div>
 
   <div class="cg3">
     <div class="panel">
-      <div class="panel-title">📈 DIS PIL cộng dồn toàn team theo ngày <span style="font-size:10px;color:var(--c-muted);font-weight:400;margin-left:6px" id="cum-lbl"></span></div>
+      <div class="panel-title">📈 Cumulative Team DIS PIL by Day <span style="font-size:10px;color:var(--c-muted);font-weight:400;margin-left:6px" id="cum-lbl"></span></div>
       <canvas id="cumulChart" height="100"></canvas>
     </div>
     <div class="panel">
-      <div class="panel-title">🎯 % PE DIS vs Target (cá nhân)</div>
+      <div class="panel-title">🎯 % PE DIS vs Target (Individual)</div>
       <canvas id="pePctChart" height="100"></canvas>
     </div>
   </div>
 
   <div class="cg2">
     <div class="panel">
-      <div class="panel-title">📋 MTD Submit PIL – từng thành viên</div>
+      <div class="panel-title">📋 MTD Submit PIL – Per Member</div>
       <canvas id="memSubChart" height="120"></canvas>
     </div>
     <div class="panel">
-      <div class="panel-title">💰 MTD DIS PIL – từng thành viên</div>
+      <div class="panel-title">💰 MTD DIS PIL – Per Member</div>
       <canvas id="memDisChart" height="120"></canvas>
     </div>
   </div>
 </div>
 
-<!-- ━━━━━━━━━━━━━━━━━━━ TAB 2: BẢNG TEAM ━━━━━━━━━━━━━━━━━━━ -->
+<!-- ━━━━━━━━━━━━━━━━━━━ TAB 2: TEAM BOARD ━━━━━━━━━━━━━━━━━━━ -->
 <div id="content-2" class="tab-content">
   <div class="toolbar">
-    <h2>👥 Bảng Team Theo Tháng</h2>
+    <h2>👥 Monthly Team Board</h2>
     <div class="tr">
-      <button class="mbtn" onclick="shiftTeamMonth(-1)">← Trước</button>
-      <div class="mlabel" id="team-mlabel" style="font-size:13px">Tháng 4 / 2026</div>
-      <button class="mbtn" onclick="shiftTeamMonth(1)">Tiếp →</button>
-      <button class="btn-s" onclick="openCalModal()">📅 Xem lịch</button>
+      <button class="mbtn" onclick="shiftTeamMonth(-1)">← Prev</button>
+      <div class="mlabel" id="team-mlabel" style="font-size:13px">April / 2026</div>
+      <button class="mbtn" onclick="shiftTeamMonth(1)">Next →</button>
+      <button class="btn-s" onclick="openCalModal()">📅 View Calendar</button>
     </div>
   </div>
 
@@ -372,13 +372,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
     <table class="dt" id="teamTable">
       <thead>
         <tr>
-          <th class="thl" rowspan="2" style="min-width:120px">Họ tên</th>
+          <th class="thl" rowspan="2" style="min-width:120px">Full Name</th>
           <th rowspan="2">Level</th>
           <th colspan="2" style="border-bottom:1px solid rgba(255,255,255,.25)">PE Target</th>
-          <th colspan="2" style="border-bottom:1px solid rgba(255,255,255,.25)">Tổng DIS</th>
+          <th colspan="2" style="border-bottom:1px solid rgba(255,255,255,.25)">Total DIS</th>
           <th colspan="2" style="border-bottom:1px solid rgba(255,255,255,.25)">Shortfall</th>
           <th rowspan="2">% DIS PIL</th>
-          <th rowspan="2">PE Thực tế</th>
+          <th rowspan="2">Actual PE</th>
         </tr>
         <tr class="thr2">
           <th>PIL</th><th>CARD</th>
@@ -392,17 +392,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
   </div>
 </div>
 
-<!-- ━━━━━━━━━━━━━━━━━━━ TAB 3: NHẬP DỮ LIỆU ━━━━━━━━━━━━━━━━━━━ -->
+<!-- ━━━━━━━━━━━━━━━━━━━ TAB 3: DATA ENTRY ━━━━━━━━━━━━━━━━━━━ -->
 <div id="content-3" class="tab-content">
   <div class="toolbar">
-    <h2>📥 Nhập Dữ Liệu Hàng Ngày</h2>
+    <h2>📥 Daily Data Entry</h2>
     <div class="tr">
       <div style="font-size:10px;color:var(--c-muted);background:var(--c-primary-l);padding:3px 9px;border-radius:5px;font-weight:600">
-        MTD=∑tháng · PE=80%PIL+20%CARD
+        MTD=∑month · PE=80%PIL+20%CARD
       </div>
       <input type="date" id="inputDate" class="di">
-      <button class="btn-s" onclick="loadDailyData()">🔄 Tải</button>
-      <button class="btn-p" id="saveBtn" onclick="saveDailyData()">💾 Lưu &amp; Check-in</button>
+      <button class="btn-s" onclick="loadDailyData()">🔄 Load</button>
+      <button class="btn-p" id="saveBtn" onclick="saveDailyData()">💾 Save &amp; Check-in</button>
     </div>
   </div>
 
@@ -410,19 +410,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
     <table class="dt" id="dailyTable">
       <thead>
         <tr>
-          <th class="thl" rowspan="2" style="min-width:115px">Họ tên</th>
+          <th class="thl" rowspan="2" style="min-width:115px">Full Name</th>
           <th rowspan="2" style="min-width:65px">Level</th>
           <!-- PIL group -->
-          <th colspan="2" style="background:#0a5a40;border-bottom:1px solid rgba(255,255,255,.25)">📄 PIL hôm nay</th>
-          <th colspan="2" style="background:#1a7a5f;border-bottom:1px solid rgba(255,255,255,.25)">✅ CARD hôm nay</th>
-          <th colspan="2" style="background:#0d6e4f;border-bottom:1px solid rgba(255,255,255,.25)">📊 MTD (∑ tháng)</th>
+          <th colspan="2" style="background:#0a5a40;border-bottom:1px solid rgba(255,255,255,.25)">📄 PIL Today</th>
+          <th colspan="2" style="background:#1a7a5f;border-bottom:1px solid rgba(255,255,255,.25)">✅ CARD Today</th>
+          <th colspan="2" style="background:#0d6e4f;border-bottom:1px solid rgba(255,255,255,.25)">📊 MTD (∑ month)</th>
           <th colspan="3" style="background:#0b5c42;border-bottom:1px solid rgba(255,255,255,.25)">🎯 % PE</th>
         </tr>
         <tr class="thr2">
           <th>Sub PIL</th><th>Dis PIL</th>
           <th style="background:#1a7a5f">Sub Card</th><th style="background:#1a7a5f">Dis Card</th>
           <th>MTD Sub</th><th>MTD Dis</th>
-          <th>%PE PIL</th><th>%PE Card</th><th>%PE Tổng</th>
+          <th>%PE PIL</th><th>%PE Card</th><th>%PE Total</th>
         </tr>
       </thead>
       <tbody id="dailyTBody"></tbody>
@@ -434,11 +434,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
 <!-- ━━━━━━━━━━━━━━━━━━━ TAB 4: ANALYSIS ━━━━━━━━━━━━━━━━━━━ -->
 <div id="content-4" class="tab-content">
   <div class="toolbar">
-    <h2>🔬 Analysis Team</h2>
+    <h2>🔬 Team Analysis</h2>
     <div class="tr">
-      <div style="font-size:11px;color:var(--c-muted)">Ngưỡng: <strong>70% DIS/Target</strong></div>
+      <div style="font-size:11px;color:var(--c-muted)">Threshold: <strong>70% DIS/Target</strong></div>
       <div class="stabs">
-        <div class="stab active" onclick="switchAView('all',this)">Tất cả</div>
+        <div class="stab active" onclick="switchAView('all',this)">All</div>
         <div class="stab" onclick="switchAView('above',this)">≥ 70% ✅</div>
         <div class="stab" onclick="switchAView('below',this)">< 70% ⚠️</div>
       </div>
@@ -449,10 +449,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
     <div>
       <div class="panel" style="margin-bottom:12px;padding:14px 20px">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
-          <div><div class="kpi-label">Đạt ≥ 70%</div><div class="kpi-value c-green" id="an-above" style="font-size:26px">0</div><div class="kpi-sub">thành viên</div></div>
-          <div><div class="kpi-label">Dưới 70%</div><div class="kpi-value c-red" id="an-below" style="font-size:26px">0</div><div class="kpi-sub">cần theo dõi</div></div>
-          <div><div class="kpi-label">Avg % DIS</div><div class="kpi-value c-amber" id="an-avg" style="font-size:26px">0%</div><div class="kpi-sub">trung bình team</div></div>
-          <div><div class="kpi-label">DIS còn lại</div><div class="kpi-value c-purple" id="an-rem" style="font-size:26px">0</div><div class="kpi-sub">để đạt 70% PE</div></div>
+          <div><div class="kpi-label">≥ 70% Achieved</div><div class="kpi-value c-green" id="an-above" style="font-size:26px">0</div><div class="kpi-sub">members</div></div>
+          <div><div class="kpi-label">Below 70%</div><div class="kpi-value c-red" id="an-below" style="font-size:26px">0</div><div class="kpi-sub">needs monitoring</div></div>
+          <div><div class="kpi-label">Avg % DIS</div><div class="kpi-value c-amber" id="an-avg" style="font-size:26px">0%</div><div class="kpi-sub">team average</div></div>
+          <div><div class="kpi-label">Remaining DIS</div><div class="kpi-value c-purple" id="an-rem" style="font-size:26px">0</div><div class="kpi-sub">to reach 70% PE</div></div>
         </div>
       </div>
       <div id="an-cards"></div>
@@ -465,7 +465,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--c-bg);color:var(--c-text)
         <div><strong>PE</strong> = 80% × DIS PIL + 20% × DIS CARD</div>
         <div><strong>70% PE</strong> = 70% × PIL Target</div>
         <div style="margin-top:7px;padding:9px;background:var(--c-primary-l);border-radius:7px;color:var(--c-primary);font-weight:700;font-size:11px">
-          DIS PIL cần đạt 70%:<br>= 70% × PIL Target ÷ 0.8
+          DIS PIL required for 70%:<br>= 70% × PIL Target ÷ 0.8
         </div>
       </div>
     </div>
@@ -494,7 +494,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // ════════════════════════════════════════
-//  DEFAULT TEAM (fallback nếu chưa có Firebase config)
+//  DEFAULT TEAM (fallback if Firebase config not loaded)
 // ════════════════════════════════════════
 const DEFAULT_MEMBERS = [
   {id:1,  name:"Tram Vuong",   level:"B7-Lv3", pilTarget:3876, cardTarget:3},
@@ -662,7 +662,7 @@ function startListener(y,m){
         else dailyData[ch.doc.id]=ch.doc.data();
       });
       refreshActiveTab();
-    },err=>{setStatus('offline');toast('Mất kết nối Firebase','error');});
+    },err=>{setStatus('offline');toast('Firebase connection lost','error');});
 }
 
 function refreshActiveTab(){
@@ -698,9 +698,9 @@ function switchAView(v,el){
 // ════════════════════════════════════════
 async function saveDailyData(){
   const date=document.getElementById('inputDate').value;
-  if(!date){toast('Chọn ngày!','error');return;}
+  if(!date){toast('Please select a date!','error');return;}
   const btn=document.getElementById('saveBtn');
-  btn.disabled=true;btn.innerHTML='⏳ Lưu…';
+  btn.disabled=true;btn.innerHTML='⏳ Saving…';
   const rows=document.querySelectorAll('#dailyTBody tr[data-name]');
   const payload={};
   rows.forEach(row=>{
@@ -717,10 +717,10 @@ async function saveDailyData(){
     setStatus('syncing');
     await db.collection('dailySales').doc(date).set(payload,{merge:true});
     dailyData[date]={...(dailyData[date]||{}),...payload};
-    toast(`Đã lưu ngày ${date}!`);setStatus('online');
+    toast(`Saved data for ${date}!`);setStatus('online');
     renderDailyTable(date);
-  }catch(e){toast('Lỗi lưu dữ liệu!','error');setStatus('offline');}
-  finally{btn.disabled=false;btn.innerHTML='💾 Lưu & Check-in';}
+  }catch(e){toast('Error saving data!','error');setStatus('offline');}
+  finally{btn.disabled=false;btn.innerHTML='💾 Save & Check-in';}
 }
 
 async function loadDailyData(){
@@ -729,9 +729,9 @@ async function loadDailyData(){
   try{
     const doc=await db.collection('dailySales').doc(date).get();
     dailyData[date]=doc.exists?doc.data():{};
-    toast(doc.exists?`Đã tải ngày ${date}`:`Chưa có dữ liệu ngày ${date}`,'info');
+    toast(doc.exists?`Loaded data for ${date}`:`No data found for ${date}`,'info');
     setStatus('online');
-  }catch(e){toast('Không tải được','error');setStatus('offline');}
+  }catch(e){toast('Failed to load data','error');setStatus('offline');}
   renderDailyTable(date);
 }
 
@@ -740,9 +740,9 @@ async function loadDailyData(){
 // ════════════════════════════════════════
 function renderDashboard(){
   const y=viewYear,m=viewMonth;
-  document.getElementById('dash-mlabel').textContent=`Tháng ${m} / ${y}`;
-  document.getElementById('hl-sub').textContent=`Tháng ${m} · ${y}`;
-  document.getElementById('cum-lbl').textContent=`Tháng ${m}/${y}`;
+  document.getElementById('dash-mlabel').textContent=`Month ${m} / ${y}`;
+  document.getElementById('hl-sub').textContent=`Month ${m} · ${y}`;
+  document.getElementById('cum-lbl').textContent=`Month ${m}/${y}`;
 
   const {sub,dis,disCard}=getTeamMonthTotals(y,m);
   const pilTgt=totalPilTarget(y,m), cardTgt=totalCardTarget(y,m);
@@ -796,11 +796,11 @@ function shiftMonth(dir){
 }
 
 // ════════════════════════════════════════
-//  TAB 2: BẢNG TEAM
+//  TAB 2: TEAM BOARD
 // ════════════════════════════════════════
 function renderTeamTable(){
   const y=teamYear,m=teamMonth;
-  document.getElementById('team-mlabel').textContent=`Tháng ${m} / ${y}`;
+  document.getElementById('team-mlabel').textContent=`Month ${m} / ${y}`;
   const sorted=sortMembers(teamMembers);
   const tbody=document.getElementById('teamTBody');
   tbody.innerHTML='';
@@ -834,7 +834,7 @@ function renderTeamTable(){
   const totPE=Math.round(tDis*0.8+tDisCard*0.2);
   const totPct=tPil>0?Math.round(tDis/tPil*100):0;
   document.getElementById('teamTFoot').innerHTML=`<tr>
-    <td class="tdl">🏁 TỔNG</td><td></td>
+    <td class="tdl">🏁 TOTAL</td><td></td>
     <td class="mono">${fmtNum(tPil)}</td><td>${tCard}</td>
     <td class="td-mtd">${fmtNum(tDis)}</td><td class="td-card">${tDisCard||'—'}</td>
     <td class="td-sf">${fmtNum(tSF)}</td><td>—</td>
@@ -863,7 +863,7 @@ function shiftCalModal(dir){calModalMonth+=dir;if(calModalMonth>12){calModalMont
 
 function renderCalModal(){
   const y=calModalYear,m=calModalMonth;
-  document.getElementById('cal-modal-title').textContent=`Tháng ${m} / ${y}`;
+  document.getElementById('cal-modal-title').textContent=`Month ${m} / ${y}`;
   const td=today(),days=new Date(y,m,0).getDate();
   const offset=(new Date(y,m-1,1).getDay()+6)%7;
   const grid=document.getElementById('cal-modal-grid');
@@ -878,18 +878,18 @@ function renderCalModal(){
     el.onclick=()=>{
       const rec=dailyData[k];
       const info=document.getElementById('cal-modal-info');
-      if(!rec||!Object.keys(rec).length){info.textContent=`${d}/${m}: Chưa có dữ liệu`;return;}
+      if(!rec||!Object.keys(rec).length){info.textContent=`${d}/${m}: No data available`;return;}
       let sub=0,dis=0,cnt=0;
       Object.values(rec).forEach(r=>{if(r&&typeof r==='object'){sub+=r.submitPIL||0;dis+=r.disPIL||0;if(r.disPIL>0||r.submitPIL>0)cnt++;}});
-      info.innerHTML=`<strong>${d}/${m}/${y}</strong> · Sub: <b>${sub}</b> · Dis: <b>${dis}</b> · <b>${cnt}</b> thành viên`;
+      info.innerHTML=`<strong>${d}/${m}/${y}</strong> · Sub: <b>${sub}</b> · Dis: <b>${dis}</b> · <b>${cnt}</b> members`;
     };
     grid.appendChild(el);
   }
-  document.getElementById('cal-modal-info').textContent='Nhấn vào ngày để xem tóm tắt';
+  document.getElementById('cal-modal-info').textContent='Click on a date to view summary';
 }
 
 // ════════════════════════════════════════
-//  TAB 3: NHẬP DỮ LIỆU (compact, full-page)
+//  TAB 3: DATA ENTRY (compact, full-page)
 // ════════════════════════════════════════
 function renderDailyTable(date){
   if(!date) return;
@@ -908,9 +908,9 @@ function renderDailyTable(date){
     const pePIL=tgt.pil>0?Math.round(mtdDis/tgt.pil*100):0;
     const mtdDisCard=getMTD(mem.name,'disCard',date);
     const peCard=tgt.card>0?Math.round(mtdDisCard/tgt.card*100):0;
-    const peFull=Math.round(mtdDis*0.8+mtdDisCard*0.2);
-    const peTgt=(tgt.pil*0.8+tgt.card*0.2)||1;
-    const pePct=Math.round(peFull/peTgt*100);
+    const pilPct=tgt.pil>0?mtdDis/tgt.pil:0;
+    const cardPct=tgt.card>0?mtdDisCard/tgt.card:0;
+    const pePct=Math.round((pilPct*0.8+cardPct*0.2)*100);
     const clr=pctClr(pePIL);
 
     if(svSub) tSub+=parseFloat(svSub);
@@ -943,13 +943,13 @@ function renderDailyTable(date){
   });
   const tPil=totalPilTarget(parseInt(date.slice(0,4)),parseInt(date.slice(5,7)));
   document.getElementById('dailyTFoot').innerHTML=`<tr>
-    <td class="tdl">📊 TỔNG</td><td></td>
+    <td class="tdl">📊 TOTAL</td><td></td>
     <td class="mono">${fmtNum(tSub)}</td><td class="mono">${fmtNum(tDis)}</td>
     <td class="td-card">${fmtNum(tSubCard)}</td><td class="td-card">${fmtNum(tDisCard)}</td>
     <td class="td-mtd">${fmtNum(gSub)}</td><td class="td-mtd">${fmtNum(gDis)}</td>
     <td class="td-pe">${tPil?Math.round(gDis/tPil*100):0}%</td>
     <td class="td-card">—</td>
-    <td class="td-pe">${Math.round(Math.round(gDis*0.8+gDisC*0.2)/(tPil||1)*100)}%</td>
+    <td class="td-pe">${(()=>{const tCard=totalCardTarget(parseInt(date.slice(0,4)),parseInt(date.slice(5,7)));const pp=tPil>0?gDis/tPil:0;const cp=tCard>0?gDisC/tCard:0;return Math.round((pp*0.8+cp*0.2)*100);})()}%</td>
   </tr>`;
 }
 
@@ -970,9 +970,9 @@ function onDailyInput(el,date,name){
   const tgt=getTargetForMember(name,y,m);
   const pePIL=tgt.pil>0?Math.round(mtdDis/tgt.pil*100):0;
   const peCard=tgt.card>0?Math.round(mtdDisC/tgt.card*100):0;
-  const peFull=Math.round(mtdDis*0.8+mtdDisC*0.2);
-  const peTgt=(tgt.pil*0.8+tgt.card*0.2)||1;
-  const pePct=Math.round(peFull/peTgt*100);
+  const pilPct=tgt.pil>0?mtdDis/tgt.pil:0;
+  const cardPct=tgt.card>0?mtdDisC/tgt.card:0;
+  const pePct=Math.round((pilPct*0.8+cardPct*0.2)*100);
   const clr=pctClr(pePIL);
 
   row.querySelector('.dmt-sub').textContent=mtdSub;
@@ -1016,10 +1016,10 @@ function renderAnalysis(){
 
   const addGroup=(grp,label,dot)=>{
     if(!grp.length) return;
-    container.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;margin-top:14px"><div style="width:9px;height:9px;border-radius:50%;background:${dot}"></div><div style="font-size:13px;font-weight:700">${label}</div><div style="font-size:11px;color:var(--c-muted);background:var(--c-bg);padding:2px 7px;border-radius:10px">${grp.length} thành viên</div></div>`;
+    container.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;margin-top:14px"><div style="width:9px;height:9px;border-radius:50%;background:${dot}"></div><div style="font-size:13px;font-weight:700">${label}</div><div style="font-size:11px;color:var(--c-muted);background:var(--c-bg);padding:2px 7px;border-radius:10px">${grp.length} members</div></div>`;
     grp.forEach(r=>{
       const clr=pctClr(r.pct);
-      const planTxt=r.above70?`<span class="plan-tag ok">✅ Đạt 70%</span>`:`<span class="plan-tag">⚠️ Cần thêm ${fmtNum(Math.round(r.remaining))} DIS</span>`;
+      const planTxt=r.above70?`<span class="plan-tag ok">✅ Achieved 70%</span>`:`<span class="plan-tag">⚠️ Need ${fmtNum(Math.round(r.remaining))} more DIS</span>`;
       container.innerHTML+=`<div class="mac">
         <div class="mac-name">${r.name}</div>
         <div class="mac-lv">${levelBadge(r.level)}</div>
@@ -1028,7 +1028,7 @@ function renderAnalysis(){
           <div><div class="mac-sl">MTD DIS PIL</div><div class="mac-sv" style="color:var(--c-primary)">${fmtNum(Math.round(r.dis))}</div></div>
           <div><div class="mac-sl">MTD DIS Card</div><div class="mac-sv c-blue">${fmtNum(Math.round(r.disC))}</div></div>
           <div><div class="mac-sl">% DIS PIL</div><div class="mac-sv" style="color:${clr}">${Math.round(r.pct)}%</div></div>
-          <div><div class="mac-sl">PE Thực tế</div><div class="mac-sv c-purple">${fmtNum(r.pe)}</div></div>
+          <div><div class="mac-sl">Actual PE</div><div class="mac-sv c-purple">${fmtNum(r.pe)}</div></div>
         </div>
         <div class="mac-plan">${planTxt}</div>
       </div>`;
@@ -1036,8 +1036,8 @@ function renderAnalysis(){
   };
 
   const filt=aView==='above'?results.filter(r=>r.above70):aView==='below'?results.filter(r=>!r.above70):results;
-  if(aView!=='below') addGroup(results.filter(r=>r.above70),'Đạt ≥ 70% DIS','var(--c-accent)');
-  if(aView!=='above') addGroup(results.filter(r=>!r.above70),'Dưới 70% — Cần theo dõi','var(--c-danger)');
+  if(aView!=='below') addGroup(results.filter(r=>r.above70),'≥ 70% Achieved','var(--c-accent)');
+  if(aView!=='above') addGroup(results.filter(r=>!r.above70),'Below 70% — Needs Monitoring','var(--c-danger)');
 
   const names=results.map(r=>chartName(r.name));
   const pcts=results.map(r=>Math.round(r.pct));
@@ -1087,7 +1087,7 @@ function addMemberRow(){
   const tbody=document.getElementById('cfg-member-tbody');
   const newId=Date.now();
   tbody.innerHTML+=`<tr data-id="${newId}">
-    <td><input class="cfg-inp cfm-name" placeholder="Họ tên"></td>
+    <td><input class="cfg-inp cfm-name" placeholder="Full Name"></td>
     <td><select class="cfg-sel cfm-level">
       <option value="B7-Lv3">B7-Lv3</option><option value="B7-Lv1">B7-Lv1</option>
       <option value="B8-Lv2">B8-Lv2</option><option value="B8-Lv1" selected>B8-Lv1</option>
@@ -1099,7 +1099,7 @@ function addMemberRow(){
 }
 
 function removeMemberRow(btn){
-  if(!confirm('Xóa thành viên này?')) return;
+  if(!confirm('Remove this member?')) return;
   btn.closest('tr').remove();
 }
 
@@ -1114,15 +1114,15 @@ async function saveConfig(){
     const id=parseInt(row.getAttribute('data-id'))||Date.now()+i;
     if(name) newMembers.push({id,name,level,pilTarget:pil,cardTarget:card});
   });
-  if(!newMembers.length){toast('Cần ít nhất 1 thành viên!','error');return;}
+  if(!newMembers.length){toast('At least 1 member is required!','error');return;}
   teamMembers=sortMembers(newMembers);
 
   try{
     setStatus('syncing');
     await db.collection('config').doc('teamMembers').set({members:teamMembers,updatedAt:new Date().toISOString()});
     setStatus('online');
-    toast('Đã lưu danh sách thành viên!');
-  }catch(e){toast('Lỗi lưu Firebase, lưu local!','info');}
+    toast('Member list saved!');
+  }catch(e){toast('Firebase error, saved locally!','info');}
 
   refreshActiveTab();
   closeConfig();
@@ -1166,8 +1166,8 @@ async function savePETargets(){
     setStatus('syncing');
     await db.collection('config').doc('peTargets').set({targets:peTargetOverrides,updatedAt:new Date().toISOString()});
     setStatus('online');
-    toast(`Đã lưu PE Target Tháng ${m}/${y}!`);
-  }catch(e){toast('Lưu local (offline)','info');}
+    toast(`PE Target saved for Month ${m}/${y}!`);
+  }catch(e){toast('Saved locally (offline)','info');}
   refreshActiveTab();
 }
 
@@ -1175,7 +1175,7 @@ async function savePETargets(){
 //  EXPORT CSV
 // ════════════════════════════════════════
 function exportData(){
-  let csv="\uFEFFNgày,Họ tên,Level,Sub PIL,Dis PIL,Sub Card,Dis Card\n";
+  let csv="\uFEFFDate,Full Name,Level,Sub PIL,Dis PIL,Sub Card,Dis Card\n";
   Object.keys(dailyData).sort().forEach(date=>{
     Object.keys(dailyData[date]).forEach(name=>{
       const d=dailyData[date][name];
@@ -1190,7 +1190,7 @@ function exportData(){
   a.href=URL.createObjectURL(blob);
   a.download=`TeamSales_${today()}.csv`;
   a.click();
-  toast('File CSV đã tải về!');
+  toast('CSV file downloaded!');
 }
 
 // ════════════════════════════════════════
